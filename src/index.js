@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { json } from 'express';
 
 import dbConect from './config/mongo.config.js';
 
@@ -9,6 +9,9 @@ const app = express();
 
 //Conexion a la base de datos
 dbConect();
+
+//lector de json
+app.use(express.json());
 
 //Endpoint Health
 app.get ("/health", (req, res) => {
