@@ -1,4 +1,4 @@
-import { dbDeleteOrders, dbGetOrders, dbInsertOrders, dbUpdateOrders,  } from '../service/order.service.js';
+import { dbDeleteOrders, dbGetOrders, dbGetOrdersById, dbInsertOrders, dbUpdateOrders,  } from '../service/order.service.js';
 
 async function getOrder (req, res){
     try{
@@ -15,6 +15,23 @@ async function getOrder (req, res){
     }
 }
 
+async function getOrderById(req, res){
+    try{
+        const id = req.params.idOrder;
+
+        const data = await dbGetOrdersById(id);
+
+        res.json({
+            msg: 'Se encontro con exito',
+            data : data
+        })
+    }catch(error){
+        console.error(error);
+        res.json({
+            msg : "Se produjo un error al encontrar tu orden"
+        });
+    }
+}
 
 async function createOrder (req, res){
     try{
@@ -75,6 +92,7 @@ async function deleteOrder (req, res){
 
 export {
     getOrder,
+    getOrderById,
     createOrder,
     updateOrder,
     deleteOrder
