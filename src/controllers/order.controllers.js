@@ -53,10 +53,16 @@ async function createOrder (req, res){
             data: data
         });
     }catch(error){
+        console.error(error);
+
+        //se valida si la propiedad tiene algun valor unico
+        if (error.code === 11000){
+            return res.json({ msg: "Este campo es unico y no se puede repetir" })
+        }
+
         res.status(500).json({
             msg:"se genero un error al crear tu orden"
         })
-        console.error(error);
     }
 }
 
