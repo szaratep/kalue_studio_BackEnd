@@ -78,6 +78,12 @@ const createProduct = async ( req, res ) =>{
     });
 } catch (error) {
         console.error( error );   
+        // validamos si la propiedad tiene un valor unico
+        if (error.code === 11000){
+            return res.json ({
+                msg: 'Error de validación po9r duplicidad en propiedades unicas'
+            })
+        }
 
               res.status(500).json({
             msg: 'No se pudo registrar el producto'
