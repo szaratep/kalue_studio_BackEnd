@@ -9,7 +9,6 @@ const dbGetProduct = async () => {
     return await ProductModel.find();
 }
 
-
 const dbGetProductById = async (id) => {
     return await ProductModel.findOne ({ _id: id});
 }
