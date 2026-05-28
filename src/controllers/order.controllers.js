@@ -27,6 +27,10 @@ async function getOrderById(req, res){
 
         const data = await dbGetOrdersById(id);
 
+        if (!data){
+            return res.status(400).json({ msg: "No se puede encontrar la orden por que no existe"});
+        }
+
         res.status(200).json({
             msg: 'Se encontro con exito',
             data : data
@@ -65,6 +69,12 @@ async function updateOrder (req, res){
  
         const data = await dbUpdateOrders(id, inputData);
 
+        // crear juna Excepcion "falsa" throw exception
+        if (!data){
+            // crea / induce a un error (es creada por el desarollador) 
+            throw new Error( 'No se logra actualizar el producto ya que no se encuentra registrado' )
+        }
+
         res.json({
             msg: 'Se ha actualizado el usuario con exito',
             data: data
@@ -74,6 +84,13 @@ async function updateOrder (req, res){
         if ( error.name === 'CastError' ){
             return res.status(400).json({ msg: "No puedo actualizar por que el id es invalido"})
         }
+
+        if (error.message === 'No se logra actualizar el producto ya que no se encuentra registrado'){
+            return res.json({
+                msg: error.message
+            });
+        }
+
         console.error(error)
         res.status(500).json({
             msg : "No se logro realizar la actualizacion, intentalo de nuevo"
@@ -90,6 +107,11 @@ async function deleteOrder (req, res){
         }
 
         const data = await dbDeleteOrders(id);
+
+
+        if (!data){
+            return res.status(400).json({ msg: "el objeto no exite" })
+        }
 
         res.status(200).json({
             msg: 'Orden eliminada exitosamente',
