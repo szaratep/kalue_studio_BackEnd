@@ -9,6 +9,11 @@ const dbGetProduct = async () => {
     return await ProductModel.find();
 }
 
+
+const dbGetProductById = async (id) => {
+    return await ProductModel.findOne ({ _id: id});
+}
+
 const dbDeleteProduct = async (id) => {
     return await ProductModel.findOneAndDelete ({ _id: id});
 }
@@ -19,6 +24,7 @@ const dbUpdateProduct = async (id, inputData) => {
 export {
     insertProduct,
     dbGetProduct,
+    dbGetProductById,
     dbDeleteProduct,
     dbUpdateProduct
 }

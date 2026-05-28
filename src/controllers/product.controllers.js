@@ -1,5 +1,5 @@
 import ProductModel from "../models/Product.model.js";
-import { dbDeleteProduct, dbGetProduct, dbUpdateProduct, insertProduct } from "../service/product.service.js";
+import { dbDeleteProduct, dbGetProduct, dbGetProductById, dbUpdateProduct, insertProduct } from "../service/product.service.js";
 
 
 
@@ -22,6 +22,18 @@ const getProduct = async ( req, res ) => {
     
    }
 }
+const GetProductById = async (req, res) =>  {
+
+    const id = req.params.id;
+
+    const data = await dbGetProductById ( id);
+
+    res.json ({
+        msg: ' Obtiene un producto por Id',
+        data: data
+    })
+}
+
 
 const createProduct = async ( req, res ) =>{
     try{
@@ -89,6 +101,7 @@ const deleteProduct = async( req, res ) => {
 
 export {
     getProduct,
+    GetProductById,
     createProduct,
     updateProduct,
     deleteProduct
