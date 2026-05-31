@@ -104,7 +104,7 @@ const updateProduct =  async ( req, res ) => {
 
     const inputData = req.body;            //obteniendo el objeto con el parametro que quiero actualizar
 
-    const data = await dbUpdateProduct ( inputData);
+    const data = await dbUpdateProduct ( id, inputData);
     //Creo una excepción 'falsa'
 
     if ( ! data ){
