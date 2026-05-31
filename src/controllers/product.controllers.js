@@ -81,7 +81,7 @@ const createProduct = async ( req, res ) =>{
         // validamos si la propiedad tiene un valor unico
         if (error.code === 11000){
             return res.json ({
-                msg: 'Error de validación po9r duplicidad en propiedades unicas'
+                msg: 'Error de validación po9r duplicidad en propiedades unicasgit '
             })
         }
 
@@ -97,7 +97,7 @@ const updateProduct =  async ( req, res ) => {
             const id = req.params.id;               //id de la ruta para encontrar el documento que quiero actualizar
 
             if ( ! mongoose.Types.ObjectId.isValid (id)){
-                return res.status(400).son ({
+                return res.status(400).json ({
                     msg: 'No se puede actualizar ID invalido'
                 })
             }
@@ -108,7 +108,7 @@ const updateProduct =  async ( req, res ) => {
     //Creo una excepción 'falsa'
 
     if ( ! data ){
-        throw new error ('No se pudo actualizar el producto, porque no se encuentra registrado');
+        throw new Error ('No se pudo actualizar el producto, porque no se encuentra registrado');
     }
         
     res.json({

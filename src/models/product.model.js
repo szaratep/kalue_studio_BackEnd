@@ -10,24 +10,50 @@ const ProductSchema = new Schema({
     },
 
     description: {
-        type: String
+        type: String,
+        default: ''
     },
         
+     slug: {
+        type: String,
+        unique: true,
+        lowercase: true
+    },
+
+    category: {
+        type: String,
+        enum: ['Tote', 'Bandolera', 'Cartera'],
+        required: true
+    },
+
+    material: {
+        type: String,
+        enum: ['Cuero', 'Cuerina', 'Sintético'],
+        required: true
+    },
+
     price: {
         type: Number,
-        default: 0,
+        required: true,
         min: 0
     },
 
     stock: {
         type: Number,
-
-
         default: 1,
-        min: 1
+        min: 0
     },
 
-    status: {
+    images: [{
+        type: String
+    }],
+
+    isFeatured: {
+        type: Boolean,
+        default: false
+    },
+
+    isActive: {
         type: Boolean,
         default: true
     }
