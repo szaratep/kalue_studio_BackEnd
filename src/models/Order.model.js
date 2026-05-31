@@ -1,11 +1,10 @@
 import { Schema, model } from 'mongoose'
-import AddressesSchema from './Adresses.model.js';
-import ItemSchema from './Items.model.js';
 
 const OrderSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
-        ref: 'users'
+        ref: 'users',
+        required: true
     },
 
     status: {
@@ -14,9 +13,17 @@ const OrderSchema = new Schema({
         default: "pendiente"
     },
 
-    items: [ItemSchema],
+    products: {
+        type: [Schema.Types.ObjectId],
+        ref: 'products',
+        required: true
+    },
 
-    mailingAddress: AddressesSchema,
+    mailingAddress: {
+        type: Schema.Types.ObjectId,
+        ref: 'users.contactID',
+        required: true
+    },
 
     subTotal: {
         type: Number,
@@ -50,7 +57,11 @@ const OrderSchema = new Schema({
         default: "pendiente"
     },
 
-    paymentReference: String,
+    paymentReference: {
+        type: String,
+        required: true,
+        trim: true
+    },
 
     notes: {
         type: String,
