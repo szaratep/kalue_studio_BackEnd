@@ -6,6 +6,7 @@ import dbConect from './config/mongo.config.js';
 import userRoutes from './routes/user.routes.js';
 import productRoutes from './routes/product.routes.js'
 import variantRoutes from './routes/variant.routes.js';
+import cartRoutes from './routes/cart.routes.js';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.get ("/health", (req, res) => {
 app.use('/users', userRoutes);
 app.use('/products', productRoutes);
 app.use('/variants', variantRoutes);
+app.use('/carts', cartRoutes);
 
 //Lanzamiento del servidor
 app.listen(3000, () =>{
