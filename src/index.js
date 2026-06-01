@@ -24,6 +24,7 @@ app.get ("/health", (req, res) => {
 //user
 app.use('/users', userRoutes);
 app.use('/products', productRoutes);
+app.use('/variants', variantRoutes);
 
 //Lanzamiento del servidor
 app.listen(3000, () =>{
