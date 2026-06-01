@@ -4,7 +4,7 @@ import {  insertVariant, dbGetVariant, dbGetVariantById, dbDeleteVariant, dbUpda
 
 
 
-const dbGetVariant = async ( req, res ) => {
+const getVariant = async ( req, res ) => {
 
    try {
             const data =await dbGetVariant();
