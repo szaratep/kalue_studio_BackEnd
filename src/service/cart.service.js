@@ -5,7 +5,7 @@ const insertCart = async (newCart) => {
 }
 
 const dbGetCart = async () => {
-    return await CartModel.find();
+    return await CartModel.find().populate('items.productId', 'name price images category');
 }
 
 const dbGetCartById = async (id) => {
@@ -21,7 +21,7 @@ const dbUpdateCart = async (id, inputData) => {
         id,
         inputData,
         {
-            new: true,
+            returnDocument: 'after',
             runValidators: true
         }
     );

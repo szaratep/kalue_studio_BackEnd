@@ -44,9 +44,7 @@ const ProductSchema = new Schema({
         min: 0
     },
 
-    images: [{
-        type: String
-    }],
+    images: [ String ],
 
     isFeatured: {
         type: Boolean,
