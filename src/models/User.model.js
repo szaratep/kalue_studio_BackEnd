@@ -46,7 +46,7 @@ const UserSchema = new Schema({
 
     contactID: {
         type: Schema.Types.ObjectId,
-        ref: 'contacts',
+        ref: 'Contacts',
         required: [true, 'Los contactos son obligatorios']
     },
 

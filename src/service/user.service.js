@@ -6,11 +6,11 @@ const dbCreateUser = async (newUser) => {
 }
 
 const dbGetUsers = async () => {
-    return await UserModel.find();
+    return await UserModel.find().populate('contactID');
 }
 
 const dbGetUserByID = async (userId) =>{
-    return await UserModel.findOne({ _id: userId });
+    return await UserModel.findOne({ _id: userId }).populate('contactID');
 }
 
 const dbUpdateUser = async (userId, inputData) => {

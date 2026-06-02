@@ -9,7 +9,7 @@ const dbGetOrders = async () => {
 };
 
 const dbGetOrdersById = async (orderId) => {
-    return await orderModel.findOne({_id: orderId});
+    return await orderModel.findOne({_id: orderId}).populate('products.productID', 'name price descripcion imagen category');
 };
 
 const dbUpdateOrders = async(orderId, inputData) => {
