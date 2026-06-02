@@ -5,7 +5,7 @@ const dbCreateOrders = async (newOrder) => {
 };
 
 const dbGetOrders = async () => {
-    return await orderModel.find();
+    return await orderModel.find().populate('products.productID', 'name price descripcion imagen category');
 };
 
 const dbGetOrdersById = async (orderId) => {

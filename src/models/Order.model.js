@@ -13,11 +13,18 @@ const OrderSchema = new Schema({
         default: "pendiente"
     },
 
-    products: {
-        type: [Schema.Types.ObjectId],
-        ref: 'products',
-        required: true
-    },
+    products: [{
+        productID:{
+            type: [Schema.Types.ObjectId],
+            ref: 'product',
+            required: true
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            min: 1
+        }
+    }],
 
     mailingAddress: {
         type: Schema.Types.ObjectId,
