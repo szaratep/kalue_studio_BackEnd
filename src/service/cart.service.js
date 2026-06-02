@@ -9,7 +9,7 @@ const dbGetCart = async () => {
 }
 
 const dbGetCartById = async (id) => {
-    return await CartModel.findOne({ _id: id });
+    return await CartModel.findOne({ _id: id }).populate('items.productId', 'name price images category');
 }
 
 const dbDeleteCart = async (id) => {
