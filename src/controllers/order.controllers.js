@@ -1,136 +1,220 @@
-import mongoose, { MongooseError } from 'mongoose';
-import { dbCreateOrders, dbDeleteOrders, dbGetOrders, dbGetOrdersById, dbUpdateOrders,  } from '../service/order.service.js';
+import { dbCreateOrders, dbDeleteOrders, dbGetOrders, dbGetOrdersById, dbUpdateOrders } from '../service/order.service.js';
 
-async function getOrder (req, res){
-    try{
+async function getOrder(req, res) {
+    try {
         const data = await dbGetOrders();
-        
+
+        if (data.length === 0) {
+            throw new Error('No se encontraron órdenes registradas en el sistema');
+        }
+
         res.status(200).json({
+            msg: 'Se han listado las órdenes exitosamente',
             data: data
-        })
-    }catch(error){
+        });
+
+    } catch (error) {
         console.error(error);
+
+        if (error.message.includes('No se encontraron órdenes registradas en el sistema')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
         res.status(500).json({
-            msg: 'No existe ningun registro'
+            msg: 'No se pudo obtener el listado de órdenes'
         });
     }
 }
 
-async function getOrderById(req, res){
-    try{
-        const id = req.params.idOrder;
 
-        //validacion defensiva: condicionamos antes de que ocurra un error (nunca ocurre)
-        if (!mongoose.Types.ObjectId.isValid(id)){
-            return res.status(400).json({ msg: "El Id es invalido, porfavor verificar, no sea bruto"})
-        }
+async function getOrderById(req, res) {
+    try {
+        const id = req.params.idOrder;
 
         const data = await dbGetOrdersById(id);
 
-        if (!data){
-            return res.status(400).json({ msg: "No se puede encontrar la orden por que no existe"});
+        if (!data) {
+            throw new Error('La orden solicitada no existe en el sistema');
         }
 
         res.status(200).json({
-            msg: 'Se encontro con exito',
-            data : data
-        })
-    }catch(error){
+            msg: 'Se encontró la orden exitosamente',
+            data: data
+        });
+
+    } catch (error) {
         console.error(error);
+
+        if (error.message.includes('La orden solicitada no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de orden provisto es inválido para la base de datos'
+            });
+        }
+
         res.status(500).json({
-            msg : "Se produjo un error al encontrar tu orden"
+            msg: 'No se pudo obtener la orden'
         });
     }
 }
 
-async function createOrder (req, res){
-    try{
+
+async function createOrder(req, res) {
+    try {
         const inputData = req.body;
 
         const data = await dbCreateOrders(inputData);
 
         res.status(201).json({
+            msg: 'Orden creada exitosamente',
             data: data
         });
-    }catch(error){
+
+    } catch (error) {
         console.error(error);
 
-        //se valida si la propiedad tiene algun valor unico
-        if (error.code === 11000){
-            return res.json({ msg: "Este campo es unico y no se puede repetir" })
+        if (error.name === 'ValidationError') {
+            const errorDetails = {};
+
+            Object.entries(error.errors).forEach(([field, errObj]) => {
+                errorDetails[field] = errObj.message;
+            });
+
+            return res.status(400).json({
+                msg: 'Error de validación en propiedades de la orden',
+                errors: errorDetails
+            });
+        }
+
+        if (error.code === 11000) {
+            const duplicatedField = Object.keys(error.keyValue)[0];
+
+            const errorMessages = {
+                numero: 'El número de orden ya se encuentra registrado'
+            };
+
+            return res.status(400).json({
+                msg: errorMessages[duplicatedField] || 'Ya existe un registro con algunos de estos valores únicos'
+            });
         }
 
         res.status(500).json({
-            msg:"se genero un error al crear tu orden"
-        })
+            msg: 'No se pudo crear la orden'
+        });
     }
 }
 
-async function updateOrder (req, res){
 
-    try{
-        const id = req.params.idOrder
+async function updateOrder(req, res) {
+    try {
+        const id = req.params.idOrder;
+        const inputData = req.body;
 
-        const inputData = req.body
- 
+        const existingOrder = await dbGetOrdersById(id);
+
+        if (!existingOrder) {
+            throw new Error('La orden que deseas actualizar no existe en el sistema');
+        }
+
         const data = await dbUpdateOrders(id, inputData);
 
-        // crear juna Excepcion "falsa" throw exception
-        if (!data){
-            // crea / induce a un error (es creada por el desarollador) 
-            throw new Error( 'No se logra actualizar el producto ya que no se encuentra registrado' )
-        }
-
-        res.json({
-            msg: 'Se ha actualizado el usuario con exito',
+        res.status(200).json({
+            msg: 'Se actualizó la orden exitosamente',
             data: data
-        })
-    }catch(error){
-        //validacion de exeception: Manejar cuando ocurre algun error
-        if ( error.name === 'CastError' ){
-            return res.status(400).json({ msg: "No puedo actualizar por que el id es invalido"})
-        }
+        });
 
-        if (error.message === 'No se logra actualizar el producto ya que no se encuentra registrado'){
-            return res.json({
+    } catch (error) {
+        console.error(error);
+
+        if (error.message.includes('La orden que deseas actualizar no existe')) {
+            return res.status(404).json({
                 msg: error.message
             });
         }
 
-        console.error(error)
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de orden provisto es inválido para la base de datos'
+            });
+        }
+
+        if (error.name === 'ValidationError') {
+            const errorDetails = {};
+
+            Object.entries(error.errors).forEach(([field, errObj]) => {
+                errorDetails[field] = errObj.message;
+            });
+
+            return res.status(400).json({
+                msg: 'Error de validación en propiedades de la orden',
+                errors: errorDetails
+            });
+        }
+
+        if (error.code === 11000) {
+            const duplicatedField = Object.keys(error.keyValue)[0];
+
+            const errorMessages = {
+                numero: 'El número de orden ya se encuentra registrado'
+            };
+
+            return res.status(400).json({
+                msg: errorMessages[duplicatedField] || 'Ya existe un registro con algunos de estos valores únicos'
+            });
+        }
+
         res.status(500).json({
-            msg : "No se logro realizar la actualizacion, intentalo de nuevo"
-        })
+            msg: 'No se pudo actualizar la orden'
+        });
     }
 }
 
-async function deleteOrder (req, res){
-    try{
+
+async function deleteOrder(req, res) {
+    try {
         const id = req.params.idOrder;
 
-        if(!mongoose.Types.ObjectId.isValid(id)){
-            return res.status(400).json({ msg: "No se puede eliminar ya que el id es invalido" })
+        const existingOrder = await dbGetOrdersById(id);
+
+        if (!existingOrder) {
+            throw new Error('La orden que deseas eliminar no existe en el sistema');
         }
 
         const data = await dbDeleteOrders(id);
 
+        res.status(200).json({
+            msg: 'La orden se eliminó exitosamente',
+            data: data
+        });
 
-        if (!data){
-            return res.status(400).json({ msg: "el objeto no exite" })
+    } catch (error) {
+        console.error(error);
+
+        if (error.message.includes('La orden que deseas eliminar no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
         }
 
-        res.status(200).json({
-            msg: 'Orden eliminada exitosamente',
-            data : data
-        })
-    }catch(error){
-        console.error(error);
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de orden provisto es inválido para la base de datos'
+            });
+        }
+
         res.status(500).json({
-            msg: "no se logro realizar la eliminacion, id invalido"
-        })
+            msg: 'No se pudo eliminar la orden'
+        });
     }
-    
 }
+
 
 export {
     getOrder,
@@ -138,4 +222,4 @@ export {
     createOrder,
     updateOrder,
     deleteOrder
-}
+};

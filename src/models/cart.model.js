@@ -11,12 +11,12 @@ const CartSchema = new Schema({
         productId: {
             type: Schema.Types.ObjectId,
             ref: 'product',
-            required: true
+            required: [true, 'El carrtio necesita un producto']
         },
         quantity: {
             type: Number,
-            required: true,
-            min: 1
+            required: [true, 'Se nececita la cantidad de productos'],
+            min: [1, 'Se necesita al menos un producto en el carrito']
         }
     }]
 
@@ -25,9 +25,6 @@ const CartSchema = new Schema({
     timestamps: true
 });
 
-const CartModel = model(
-    'cart',
-    CartSchema
-);
+const CartModel = model('cart', CartSchema);
 
 export default CartModel;

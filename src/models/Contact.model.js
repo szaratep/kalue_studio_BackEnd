@@ -1,61 +1,45 @@
-import {Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
 const ContactSchema = new Schema({
-    email: {
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'user',
+        required: [true, 'El contacto debe estar asociado a un usuario']
+    },
+    label: {
         type: String,
-        unique: true,
-        required: true,
-        trim:true
+        required: [true, 'La etiqueta es obligatoria (ej. Casa, Trabajo, Novia)'],
+        trim: true,
+        maxlength: [30, 'La etiqueta no puede exceder los 30 caracteres']
     },
-
-    phoneNumber: {
+    receiverName: {
         type: String,
-        minLength: 10,
-        maxLength: 10,
-        trim: true
+        required: [true, 'El nombre de quien recibe es obligatorio'],
+        trim: true,
+        minlength: [2, 'El nombre debe tener al menos 2 caracteres'],
+        maxlength: [50, 'El nombre no puede exceder los 50 caracteres']
     },
-
-    address:{
+    address: {
         type: String,
-        required: true,
-        trim: true 
+        required: [true, 'La dirección de entrega es obligatoria'],
+        trim: true,
+        minlength: [5, 'La dirección debe tener al menos 5 caracteres']
     },
-    
-    alias: {
+    phone: {
         type: String,
-        required: true
+        required: [true, 'El teléfono de contacto es obligatorio'],
+        trim: true,
+        match: [/^[+0-9\s-]+$/, 'El teléfono solo puede contener números, espacios y guiones']
     },
-
-    city: {
-        type: String,
-        required: true
-    },
-
-    state: {
-        type: String,
-        required: true
-    },
-
-    zipCode: {
-        type: String
-    },
-
-    country: {
-        type: String,
-        default: 'Colombia'
-    },
-
     isDefault: {
         type: Boolean,
         default: false
     }
-    
-
 }, {
     versionKey: false,
     timestamps: true
 });
 
-const ContactModel = new model('Contacts', ContactSchema);
+const ContactModel = model('contact', ContactSchema);
 
 export default ContactModel;

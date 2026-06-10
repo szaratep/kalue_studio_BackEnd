@@ -1,183 +1,226 @@
-import mongoose from "mongoose";
-//import ProductModel from "../models/Product.model.js";
 import { dbDeleteProduct, dbGetProduct, dbGetProductById, dbUpdateProduct, insertProduct } from "../service/product.service.js";
 
+const getProduct = async (req, res) => {
+    try {
+        const data = await dbGetProduct();
+
+        if (data.length === 0) {
+            throw new Error('No se encontraron productos registrados en el sistema');
+        }
+
+        res.status(200).json({
+            msg: 'Se han listado los productos exitosamente',
+            data: data
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        if (error.message.includes('No se encontraron productos registrados en el sistema')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        res.status(500).json({
+            msg: 'No se pudo obtener el listado de productos'
+        });
+    }
+};
 
 
-const getProduct = async ( req, res ) => {
-
-   try {
-            const data =await dbGetProduct();
-
-            res.json({
-                msg: 'Obtener los productos',
-                data: data
-    });
-    
-   } catch (error) {
-    console.error(error)
-
-    res.status(500).json ({
-        msg:'no se pudo obtener el listado de productos'
-    })
-    
-   }
-}
-
-
-const GetProductById = async (req, res) =>  {
-
+const getProductById = async (req, res) => {
     try {
         const id = req.params.id;
 
-        //validación defensiva: condicionamos previo a que ocurra el error (nunca ocurre)
+        const data = await dbGetProductById(id);
 
-        if ( ! mongoose.Types.ObjectId.isValid(id)) {
-
-            return res.status (400).json({
-                 msg: 'El ID proporcionado es invalido'
-            }) 
-               
-            
+        if (!data) {
+            throw new Error('El producto solicitado no existe en el sistema');
         }
 
-    const data = await dbGetProductById ( id);
-
-    //validación directa al resultado de la consulta
-
-    if (! data){
-        return res.json({
-            msg: 'No se puede obtener ID, producto no se encuentra registrado'
-        })
-    }
-
-    res.json ({
-        msg: ' Obtiene un producto por Id',
-        data: data
-    });
+        res.status(200).json({
+            msg: 'Se encontró el producto exitosamente',
+            data: data
+        });
 
     } catch (error) {
-        console.error( error );   
+        console.error(error);
 
-              res.status(500).json({
-            msg: 'No se pudo obtener producto'
+        if (error.message.includes('El producto solicitado no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de producto provisto es inválido para la base de datos'
+            });
+        }
+
+        res.status(500).json({
+            msg: 'No se pudo obtener el producto'
         });
     }
-}
+};
 
 
-const createProduct = async ( req, res ) =>{
-    try{
+const createProduct = async (req, res) => {
+    try {
         const inputData = req.body;
 
-        const data = await insertProduct ( inputData);
-        
-        res.json({
-            msg: "crear un producto",
+        const data = await insertProduct(inputData);
+
+        res.status(201).json({
+            msg: 'Producto registrado exitosamente',
             data: data
-    });
-} catch (error) {
-        console.error( error );   
-        // validamos si la propiedad tiene un valor unico
-        if (error.code === 11000){
-            return res.json ({
-                msg: 'Error de validación po9r duplicidad en propiedades unicasgit '
-            })
-        }
-
-              res.status(500).json({
-            msg: 'No se pudo registrar el producto'
-        })
-    }
-}
-
-const updateProduct =  async ( req, res ) => {
-
-    try {
-            const id = req.params.id;               //id de la ruta para encontrar el documento que quiero actualizar
-
-            if ( ! mongoose.Types.ObjectId.isValid (id)){
-                return res.status(400).json ({
-                    msg: 'No se puede actualizar ID invalido'
-                })
-            }
-
-    const inputData = req.body;            //obteniendo el objeto con el parametro que quiero actualizar
-
-    const data = await dbUpdateProduct ( id, inputData);
-    //Creo una excepción 'falsa'
-
-    if ( ! data ){
-        throw new Error ('No se pudo actualizar el producto, porque no se encuentra registrado');
-    }
-        
-    res.json({
-        msg: 'Actualiza un producto',
-        data: data
-    });
-}
-     catch (error){
-        console.error( error );  
-        
-        // validación exceotion: Manejar cuando ocurre el eror
-
-        if ( error.name === 'CastError') {
-
-            return res.status(400).json ({
-                msg: 'No se pudo actualizar el producto, ID invalido'
-            })
-        }
-
-        if ( error.message.includes('No se pudo actualizar el producto, porque no se encuentra registrado')){
-            return res.json({
-                msg: error.message 
-            })
-        }
-            res.status(500).json({
-                msg: 'No se pudo actualizar el producto'
-            } )
-        
-    }
-}
-
-
-const deleteProduct = async( req, res ) => {
-    try {
-         const id = req.params.id;
-
-         if ( ! mongoose.Types.ObjectId.isValid (id)){
-            return res.status(400).json({
-                msg: 'no se puede eliminar ID invalido'
-            })
-         }
-         
-    const data = await dbDeleteProduct(id);
-
-    if (! data) {
-        return res.json ({
-            msg: 'No se puede eliminar no exsiste producto'
         });
-    }
-
-      res.json({
-        msg: 'Elimina un producto',
-        data: data
-    });
 
     } catch (error) {
-        console.error( error );   
+        console.error(error);
 
-              res.status(500).json({
+        if (error.name === 'ValidationError') {
+            const errorDetails = {};
+
+            Object.entries(error.errors).forEach(([field, errObj]) => {
+                errorDetails[field] = errObj.message;
+            });
+
+            return res.status(400).json({
+                msg: 'Error de validación en propiedades del producto',
+                errors: errorDetails
+            });
+        }
+
+        if (error.code === 11000) {
+            const duplicatedField = Object.keys(error.keyValue)[0];
+
+            const errorMessages = {
+                nombre: 'El nombre del producto ya se encuentra registrado',
+                sku: 'El SKU ya se encuentra en uso por otro producto'
+            };
+
+            return res.status(400).json({
+                msg: errorMessages[duplicatedField] || 'Ya existe un registro con algunos de estos valores únicos'
+            });
+        }
+
+        res.status(500).json({
+            msg: 'No se pudo registrar el producto'
+        });
+    }
+};
+
+
+const updateProduct = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const inputData = req.body;
+
+        const existingProduct = await dbGetProductById(id);
+
+        if (!existingProduct) {
+            throw new Error('El producto que deseas actualizar no existe en el sistema');
+        }
+
+        const data = await dbUpdateProduct(id, inputData);
+
+        res.status(200).json({
+            msg: 'Se actualizó el producto exitosamente',
+            data: data
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        if (error.message.includes('El producto que deseas actualizar no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de producto provisto es inválido para la base de datos'
+            });
+        }
+
+        if (error.name === 'ValidationError') {
+            const errorDetails = {};
+
+            Object.entries(error.errors).forEach(([field, errObj]) => {
+                errorDetails[field] = errObj.message;
+            });
+
+            return res.status(400).json({
+                msg: 'Error de validación en propiedades del producto',
+                errors: errorDetails
+            });
+        }
+
+        if (error.code === 11000) {
+            const duplicatedField = Object.keys(error.keyValue)[0];
+
+            const errorMessages = {
+                nombre: 'El nombre del producto ya se encuentra registrado',
+                sku: 'El SKU ya se encuentra en uso por otro producto'
+            };
+
+            return res.status(400).json({
+                msg: errorMessages[duplicatedField] || 'Ya existe un registro con algunos de estos valores únicos'
+            });
+        }
+
+        res.status(500).json({
+            msg: 'No se pudo actualizar el producto'
+        });
+    }
+};
+
+
+const deleteProduct = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const existingProduct = await dbGetProductById(id);
+
+        if (!existingProduct) {
+            throw new Error('El producto que deseas eliminar no existe en el sistema');
+        }
+
+        const data = await dbDeleteProduct(id);
+
+        res.status(200).json({
+            msg: 'El producto se eliminó exitosamente',
+            data: data
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        if (error.message.includes('El producto que deseas eliminar no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de producto provisto es inválido para la base de datos'
+            });
+        }
+
+        res.status(500).json({
             msg: 'No se pudo eliminar el producto'
-    }  
-)
-}
-}
-   
+        });
+    }
+};
+
 
 export {
     getProduct,
-    GetProductById,
+    getProductById,
     createProduct,
     updateProduct,
     deleteProduct

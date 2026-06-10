@@ -1,61 +1,59 @@
-import { Schema, Types, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
-
-//Primera parte: definir el schema
 const UserSchema = new Schema({
     name: {
         type: String,
         required: [true, 'El nombre es obligatorio'],
-        trim:true
+        trim: true,
+        match: [/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'El nombre solo puede contener letras y espacios'],
+        minlength: [2, 'El nombre debe tener al menos 2 caracteres'],
+        maxlength: [50, 'El nombre no puede exceder los 50 caracteres']
     },
-
-    lastName: {
+    nickname: {
         type: String,
-        required: [true, 'El apellido es obligatorio'],
-        trim: true
+        required: [true, 'El nickname es obligatorio'],
+        unique: true,
+        lowercase: true,
+        trim: true,
+        match: [/^[a-zA-Z0-9]+$/, 'El nickname solo puede contener caracteres alfanuméricos (sin espacios ni caracteres especiales)'],
+        minlength: [3, 'El nickname debe tener al menos 3 caracteres'],
+        maxlength: [20, 'El nickname no puede exceder los 20 caracteres']
     },
-    
-    userName: {
+    email: {
         type: String,
-        required: [true, 'El nombre de usuario es obligatorio'],
-        trim:true,
-        unique: true
+        required: [true, 'El correo electrónico es obligatorio'],
+        unique: true,
+        lowercase: true,
+        trim: true,
+        match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Por favor, ingresa un correo electrónico válido']
     },
-
-    password:{
+    password: {
         type: String,
-        required: [true, 'La constraseña es obligatoria'],
-        trim: true
+        required: [true, 'La contraseña es obligatoria']
     },
-
     role: {
         type: String,
-        enum: ["admin", "vendedor", "comprador"],
-        default: "comprador",
+        required: true,
+        enum: ['administrator', 'editor', 'author', 'contributor', 'subscriber'],
+        default: 'subscriber'
     },
-
-    birthdate: {
-        type: Date,
-        required: [true, 'Tu fehca de cumpleañoss es obligatoria'],
-    },
-
     status: {
         type: Boolean,
-        default: false,
+        default: true
     },
-
-    contactID: {
+    avatar: {
+        type: String,
+        default: ''
+    },
+    contacts: [{
         type: Schema.Types.ObjectId,
-        ref: 'Contacts',
-        required: [true, 'Los contactos son obligatorios']
-    },
-
-},{
+        ref: 'contact'
+    }]
+}, {
     versionKey: false,
     timestamps: true
 });
 
-//Segunda parte: definir el modelo
-const UserModel = new model('Users', UserSchema);
+const UserModel = model('user', UserSchema);
 
 export default UserModel;

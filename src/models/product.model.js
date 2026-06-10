@@ -4,47 +4,47 @@ import { Schema, model } from 'mongoose';
 const ProductSchema = new Schema({
     name: {
         type: String,
-        required: true,
+        required: [true, 'El nombre del producto es obligatorio'],
         trim: true,
-        unique: true
+        unique: [true, 'El nombre del producto es unico'], 
+        minlength: [2, 'El nombre debe tener al menos 2 caracteres'],
+        maxlength: [50, 'El nombre no puede exceder los 50 caracteres']
     },
 
     description: {
         type: String,
         default: ''
     },
-        
-     slug: {
-        type: String,
-        unique: true,
-        lowercase: true
-    },
 
     category: {
         type: String,
         enum: ['Tote', 'Bandolera', 'Cartera'],
-        required: true
+        required: [true, 'La categoria es obligatoria']
     },
 
     material: {
         type: String,
         enum: ['Cuero', 'Cuerina', 'Sintético'],
-        required: true
+        default: 'Cuero'
     },
 
     price: {
         type: Number,
-        required: true,
-        min: 0
+        required: [true, 'El precio del producto el obligatorio'],
+        min: [0, 'El precio no puede ser negativo']
     },
 
     stock: {
         type: Number,
         default: 1,
-        min: 0
+        min: [0, 'El stock no puede ser negativo']
     },
 
-    images: [ String ],
+    images: [{
+        type: String,
+        min : [0, 'Las imagenes no pueden ser negativas'],
+        max : [5, 'Solo puedes colocar 5 imagenes']
+    }],
 
     isFeatured: {
         type: Boolean,
@@ -61,10 +61,6 @@ const ProductSchema = new Schema({
 });
 
 
-const ProductModel = model( 
-    'product',         
-    ProductSchema       
-);
-
+const ProductModel = model('product', ProductSchema);
 
 export default ProductModel;

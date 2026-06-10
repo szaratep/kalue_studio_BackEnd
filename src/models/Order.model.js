@@ -4,7 +4,7 @@ const OrderSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
         ref: 'users',
-        required: true
+        required: [true, 'La orden debe estar asociada a un usuario']
     },
 
     status: {
@@ -17,19 +17,19 @@ const OrderSchema = new Schema({
         productID:{
             type: [Schema.Types.ObjectId],
             ref: 'product',
-            required: true
+            required: [true, 'La orden necesita un producto']
         },
         quantity: {
             type: Number,
             required: true,
-            min: 1
+            min: [1, 'Se necesita al menos un producto en la orden']
         }
     }],
 
     mailingAddress: {
         type: Schema.Types.ObjectId,
         ref: 'contacts',
-        required: true
+        required: [true, 'La direccion de envio es obligatoria']
     },
 
     subTotal: {
@@ -66,13 +66,13 @@ const OrderSchema = new Schema({
 
     paymentReference: {
         type: String,
-        required: true,
+        required: [true, 'La referencia de pago es obligatoria'],
         trim: true
     },
 
     notes: {
         type: String,
-        maxLength: 200
+        maxLength: [200, 'Las notas no pueden exeder los 200 caracteres']
     }
 }, {
     versionKey: false,

@@ -1,183 +1,226 @@
-import mongoose from "mongoose";
+import { insertVariant, dbGetVariant, dbGetVariantById, dbDeleteVariant, dbUpdateVariant } from "../service/variant.service.js";
 
-import {  insertVariant, dbGetVariant, dbGetVariantById, dbDeleteVariant, dbUpdateVariant } from "../service/variant.service.js";
+const getVariant = async (req, res) => {
+    try {
+        const data = await dbGetVariant();
+
+        if (data.length === 0) {
+            throw new Error('No se encontraron variantes registradas en el sistema');
+        }
+
+        res.status(200).json({
+            msg: 'Se han listado las variantes exitosamente',
+            data: data
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        if (error.message.includes('No se encontraron variantes registradas en el sistema')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        res.status(500).json({
+            msg: 'No se pudo obtener el listado de variantes'
+        });
+    }
+};
 
 
-
-const getVariant = async ( req, res ) => {
-
-   try {
-            const data =await dbGetVariant();
-
-            res.json({
-                msg: 'Obtener las variantes',
-                data: data
-    });
-    
-   } catch (error) {
-    console.error(error)
-
-    res.status(500).json ({
-        msg:'no se pudo obtener el listado de variantes'
-    })
-    
-   }
-}
-
-
-const GetVariantById = async (req, res) =>  {
-
+const getVariantById = async (req, res) => {
     try {
         const id = req.params.id;
 
-        //validación defensiva: condicionamos previo a que ocurra el error (nunca ocurre)
+        const data = await dbGetVariantById(id);
 
-        if ( ! mongoose.Types.ObjectId.isValid(id)) {
-
-            return res.status (400).json({
-                 msg: 'El ID proporcionado es invalido'
-            }) 
-               
-            
+        if (!data) {
+            throw new Error('La variante solicitada no existe en el sistema');
         }
 
-    const data = await dbGetVariantById ( id);
-
-    //validación directa al resultado de la consulta
-
-    if (! data){
-        return res.json({
-            msg: 'No se puede obtener ID, variante no se encuentra registrada'
-        })
-    }
-
-    res.json ({
-        msg: ' Obtiene una variante por Id',
-        data: data
-    });
+        res.status(200).json({
+            msg: 'Se encontró la variante exitosamente',
+            data: data
+        });
 
     } catch (error) {
-        console.error( error );   
+        console.error(error);
 
-              res.status(500).json({
-            msg: 'No se pudo obtener variante'
+        if (error.message.includes('La variante solicitada no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de variante provisto es inválido para la base de datos'
+            });
+        }
+
+        res.status(500).json({
+            msg: 'No se pudo obtener la variante'
         });
     }
-}
+};
 
 
-const createVariant = async ( req, res ) =>{
-    try{
+const createVariant = async (req, res) => {
+    try {
         const inputData = req.body;
 
-        const data = await insertVariant ( inputData);
-        
-        res.json({
-            msg: "crear una variante",
+        const data = await insertVariant(inputData);
+
+        res.status(201).json({
+            msg: 'Variante registrada exitosamente',
             data: data
-    });
-} catch (error) {
-        console.error( error );   
-        // validamos si la propiedad tiene un valor unico
-        if (error.code === 11000){
-            return res.json ({
-                msg: 'Error de validación por duplicidad en propiedades unicasgit '
-            })
-        }
-
-              res.status(500).json({
-            msg: 'No se pudo registrar la variante'
-        })
-    }
-}
-
-const updateVariant =  async ( req, res ) => {
-
-    try {
-            const id = req.params.id;               //id de la ruta para encontrar el documento que quiero actualizar
-
-            if ( ! mongoose.Types.ObjectId.isValid (id)){
-                return res.status(400).json ({
-                    msg: 'No se puede actualizar ID invalido'
-                })
-            }
-
-    const inputData = req.body;            //obteniendo el objeto con el parametro que quiero actualizar
-
-    const data = await dbUpdateVariant( id, inputData);
-    //Creo una excepción 'falsa'
-
-    if ( ! data ){
-        throw new Error ('No se pudo actualizar la variante, porque no se encuentra registrado');
-    }
-        
-    res.json({
-        msg: 'Actualiza la variante',
-        data: data
-    });
-}
-     catch (error){
-        console.error( error );  
-        
-        // validación exceotion: Manejar cuando ocurre el eror
-
-        if ( error.name === 'CastError') {
-
-            return res.status(400).json ({
-                msg: 'No se pudo actualizar la variante, ID invalido'
-            })
-        }
-
-        if ( error.message.includes('No se pudo actualizar la variante, porque no se encuentra registrado')){
-            return res.json({
-                msg: error.message 
-            })
-        }
-            res.status(500).json({
-                msg: 'No se pudo actualizar la  variante'
-            } )
-        
-    }
-}
-
-
-const deleteVariant = async( req, res ) => {
-    try {
-         const id = req.params.id;
-
-         if ( ! mongoose.Types.ObjectId.isValid (id)){
-            return res.status(400).json({
-                msg: 'no se puede eliminar ID invalido'
-            })
-         }
-         
-    const data = await dbDeleteVariant(id);
-
-    if (! data) {
-        return res.json ({
-            msg: 'No se puede eliminar no exsiste variante'
         });
-    }
-
-      res.json({
-        msg: 'Elimina una variante',
-        data: data
-    });
 
     } catch (error) {
-        console.error( error );   
+        console.error(error);
 
-              res.status(500).json({
+        if (error.name === 'ValidationError') {
+            const errorDetails = {};
+
+            Object.entries(error.errors).forEach(([field, errObj]) => {
+                errorDetails[field] = errObj.message;
+            });
+
+            return res.status(400).json({
+                msg: 'Error de validación en propiedades de la variante',
+                errors: errorDetails
+            });
+        }
+
+        if (error.code === 11000) {
+            const duplicatedField = Object.keys(error.keyValue)[0];
+
+            const errorMessages = {
+                nombre: 'El nombre de la variante ya se encuentra registrado',
+                sku: 'El SKU ya se encuentra en uso por otra variante'
+            };
+
+            return res.status(400).json({
+                msg: errorMessages[duplicatedField] || 'Ya existe un registro con algunos de estos valores únicos'
+            });
+        }
+
+        res.status(500).json({
+            msg: 'No se pudo registrar la variante'
+        });
+    }
+};
+
+
+const updateVariant = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const inputData = req.body;
+
+        const existingVariant = await dbGetVariantById(id);
+
+        if (!existingVariant) {
+            throw new Error('La variante que deseas actualizar no existe en el sistema');
+        }
+
+        const data = await dbUpdateVariant(id, inputData);
+
+        res.status(200).json({
+            msg: 'Se actualizó la variante exitosamente',
+            data: data
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        if (error.message.includes('La variante que deseas actualizar no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de variante provisto es inválido para la base de datos'
+            });
+        }
+
+        if (error.name === 'ValidationError') {
+            const errorDetails = {};
+
+            Object.entries(error.errors).forEach(([field, errObj]) => {
+                errorDetails[field] = errObj.message;
+            });
+
+            return res.status(400).json({
+                msg: 'Error de validación en propiedades de la variante',
+                errors: errorDetails
+            });
+        }
+
+        if (error.code === 11000) {
+            const duplicatedField = Object.keys(error.keyValue)[0];
+
+            const errorMessages = {
+                nombre: 'El nombre de la variante ya se encuentra registrado',
+                sku: 'El SKU ya se encuentra en uso por otra variante'
+            };
+
+            return res.status(400).json({
+                msg: errorMessages[duplicatedField] || 'Ya existe un registro con algunos de estos valores únicos'
+            });
+        }
+
+        res.status(500).json({
+            msg: 'No se pudo actualizar la variante'
+        });
+    }
+};
+
+
+const deleteVariant = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const existingVariant = await dbGetVariantById(id);
+
+        if (!existingVariant) {
+            throw new Error('La variante que deseas eliminar no existe en el sistema');
+        }
+
+        const data = await dbDeleteVariant(id);
+
+        res.status(200).json({
+            msg: 'La variante se eliminó exitosamente',
+            data: data
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        if (error.message.includes('La variante que deseas eliminar no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de variante provisto es inválido para la base de datos'
+            });
+        }
+
+        res.status(500).json({
             msg: 'No se pudo eliminar la variante'
-    }  
-)
-}
-}
-   
+        });
+    }
+};
+
 
 export {
     getVariant,
-    GetVariantById,
+    getVariantById,
     createVariant,
     updateVariant,
     deleteVariant
