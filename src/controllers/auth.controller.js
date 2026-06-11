@@ -1,36 +1,28 @@
-import { validatePassword } from "../helpers/bcrypt.helper";
-import { generateToken } from "../helpers/jwt.helper";
-import { dbGetUserByEmail, dbGetUserByNickName } from "../service/user.service";
+import { validatePassword } from "../helpers/bcrypt.helper.js";
+import { generateToken } from "../helpers/jwt.helper.js";
+import verifyEmailOrNickname from "../helpers/verifyEmailNick.helper.js";
+import { dbGetUserByEmail, dbGetUserByNickName } from "../service/user.service.js";
 
 const loginUser = async (req, res) => {
-    try{
+    try {
         // Paso 1: Extraer los datos del cuerpo de la peticion;
         const inputData = req.body; //{user: 'email o nickname', password: ''}
 
-        if(!inputData.password){
+        if (!inputData.password) {
             throw new Error('Se olvido pasar la propiedad password en el login');
         }
 
         // Paso 2: Verificar si el usuario existe y Verifica si se va a buscar por correo o por nickname
-        const userFound = null;
-        for (value of inputData.user){ 
-            if (value === '@'){
-                userFound = await dbGetUserByEmail(inputData.user)
-            }
-        }
+        const userFound = await verifyEmailOrNickname(inputData);
 
-        if (!userFound || userFound == null){
-            userFound = await dbGetUserByNickName(inputData.user);
-        }
-
-        if(!userFound){
+        if (!userFound) {
             throw new Error('El usuario no existe, por favor registrese');
-        } 
+        }
 
         // Paso 3: Verificar si la contraseña es valida
         const isValid = validatePassword(inputData.password, userFound.password)
 
-        if(!isValid){
+        if (!isValid) {
             throw new Error('Sus credenciales no son validas');
         }
 
@@ -47,7 +39,7 @@ const loginUser = async (req, res) => {
 
         const token = generateToken(payload);
 
-        if (token === null){
+        if (token === null) {
             throw new Error('No se pudo generar el token de acceso');
         }
 
@@ -61,18 +53,18 @@ const loginUser = async (req, res) => {
         //Paso 6: Responde al cliente enviandole el token;
         res.json({
             msg: 'login exitoso',
-            token, 
+            token,
             data: userFoundObj
-        }); 
+        });
 
-    }catch(error){
+    } catch (error) {
         console.error(error);
 
         // A. Controlar errores de validación de campos del login (Negocio)
-        if(
+        if (
             error.message.includes('Se olvidó pasar') ||
             error.message.includes('El usuario no existe') ||
-            error.message.includes('Sus credenciales no son validas') 
+            error.message.includes('Sus credenciales no son validas')
         ) {
             return res.status(400).json({
                 msg: error.message
@@ -80,7 +72,7 @@ const loginUser = async (req, res) => {
         }
 
         // B. Controlar error al generar el token (Internal Server Error)
-        if (error.message.includes('No se pudo generar el token de acceso')){
+        if (error.message.includes('No se pudo generar el token de acceso')) {
             return res.status(500).json({
                 msg: error.message
             });
@@ -94,6 +86,6 @@ const loginUser = async (req, res) => {
 }
 
 
-export{
+export {
     loginUser
 }

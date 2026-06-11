@@ -10,6 +10,7 @@ import ordersRoutes from './routes/order.routes.js'
 import productRoutes from './routes/product.routes.js'
 import variantRoutes from './routes/variant.routes.js';
 import cartRoutes from './routes/cart.routes.js';
+import authRoutes from './routes/auth.routes.js'
 
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/orders', ordersRoutes)
 app.use('/api/products', productRoutes);
 app.use('/api/variants', variantRoutes);
 app.use('/api/carts', cartRoutes);
+app.use('/api/auth', authRoutes);
 
 //Lanzamiento del servidor
 app.listen(PORT, () =>{
