@@ -14,11 +14,11 @@ const dbGetUserByID = async (userId) =>{
 }
 
 const dbGetUserByEmail = async (email) => {
-    return await UserModel.findOne({ email: email }).populate('contacts');
+    return await UserModel.findOne({ email: email, status: true }).populate('contacts');
 }
 
 const dbGetUserByNickName = async (nickName) => {
-    return await UserModel.findOne({ nickname: nickName }).populate('contacts');
+    return await UserModel.findOne({ nickname: nickName, status: true}).populate('contacts');
 }
 
 const dbUpdateUser = async (userId, inputData) => {

@@ -85,7 +85,51 @@ const loginUser = async (req, res) => {
     }
 }
 
+const reNewToken = async (req, res) => {
+    // Paso 1: obtener los datos del usuario y carga util del middleware
+    const payload = req.payload;
+    const user = req.user;
+
+    // Paso2: Verificar que el usuario al que se le ca a generar el nuevo token exista y este activo
+    const userFound = await dbGetUserByEmail(payload.email);
+
+    if (!userFound){
+        return res.status(400).json({
+            msg: 'No se renueva el token, por que el usuario ha sido eliminado o su estado es inactivo'
+        });
+    }
+
+    // Paso 3; Generar un nuevo token a partir de los datos registrados en la base de datos
+    const newPayload = {
+        _id: userFound._id,
+        name: userFound.name,
+        nickname: userFound.nickname,
+        email: userFound.email,
+        role: userFound.role,
+        avatar: userFound.avatar,
+        status: userFound.status
+    };
+
+    // Creacion del nuevo token 
+    const token = generateToken (newPayload);
+
+    // Paso 4: Eliminar las propiedades sensibles como el password, etc.
+    const userFoundObj = userFound.toObject();
+
+    delete userFoundObj.password;
+    delete userFoundObj.createdAt;
+    delete userFoundObj.updatedAt;
+
+    // Paso 5: Responde al cliente con el nuevo token y los datos del usuario
+    res.json({
+        msg: 'Renovacion exitosa',
+        token,
+        data: userFoundObj
+    });
+
+}
 
 export {
-    loginUser
+    loginUser,
+    reNewToken
 }
