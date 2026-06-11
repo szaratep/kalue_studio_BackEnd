@@ -6,11 +6,19 @@ const dbCreateUser = async (newUser) => {
 }
 
 const dbGetUsers = async () => {
-    return await UserModel.find().populate('contactID');
+    return await UserModel.find().populate('contacts');
 }
 
 const dbGetUserByID = async (userId) =>{
-    return await UserModel.findOne({ _id: userId }).populate('contactID');
+    return await UserModel.findOne({ _id: userId }).populate('contacts');
+}
+
+const dbGetUserByEmail = async (email) => {
+    return await UserModel.findOne({ email: email }).populate('contacts');
+}
+
+const dbGetUserByNickName = async (nickName) => {
+    return await UserModel.findOne({ nickname: nickName }).populate('contacts');
 }
 
 const dbUpdateUser = async (userId, inputData) => {
@@ -26,5 +34,7 @@ export {
     dbGetUsers,
     dbGetUserByID,
     dbUpdateUser,
-    dbDeleteUser
+    dbDeleteUser,
+    dbGetUserByEmail,
+    dbGetUserByNickName
 }

@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { createContact, deleteContact, getContact, getContactById, updateContact } from "../controllers/contact.controllers.js";
+
+import { createContact, deleteContact, getContact, getContactById, updateContact } from "../controllers/contact.controller.js";
 
 const router = Router();
 

@@ -1,4 +1,4 @@
-import VariantModel from "../models/variant.model.js";
+import VariantModel from "../models/Variant.model.js";
 
 const insertVariant = async (newVariant) => {
     return await VariantModel.create(newVariant);

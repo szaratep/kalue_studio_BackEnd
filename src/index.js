@@ -13,6 +13,7 @@ import cartRoutes from './routes/cart.routes.js';
 
 
 const app = express();
+const PORT = process.env.PORT || 3001;
 
 //Conexion a la base de datos
 dbConect();
@@ -30,14 +31,14 @@ app.get ("/health", (req, res) => {
 
 //Endpoints agrupados por entidad
 //user
-app.use('/users', userRoutes);
-app.use('/contacts', contactsRoutes);
-app.use('/orders', ordersRoutes)
-app.use('/products', productRoutes);
-app.use('/variants', variantRoutes);
-app.use('/carts', cartRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/contacts', contactsRoutes);
+app.use('/api/orders', ordersRoutes)
+app.use('/api/products', productRoutes);
+app.use('/api/variants', variantRoutes);
+app.use('/api/carts', cartRoutes);
 
 //Lanzamiento del servidor
-app.listen(3000, () =>{
-    console.log('Server running on: http://localhost:3000');
+app.listen(PORT, () =>{
+    console.log(`Server running on: http://localhost:${PORT}`);
 })
