@@ -1,5 +1,6 @@
 
 import express from 'express';
+import cors from 'cors';
 
 import dbConect from './config/mongo.config.js';
 
@@ -11,6 +12,7 @@ import productRoutes from './routes/product.routes.js'
 import variantRoutes from './routes/variant.routes.js';
 import cartRoutes from './routes/cart.routes.js';
 import authRoutes from './routes/auth.routes.js'
+import roleRoutes from './routes/roles.routes.js'
 
 
 const app = express();
@@ -21,7 +23,9 @@ dbConect();
 
 //Middelwares
 app.use(express.json()); //habilita la interpretacion de objetos json
-
+app.use(cors({
+    origin: 'http://localhost:4200'
+}))
 
 //Endpoint Health
 app.get ("/health", (req, res) => {
@@ -39,6 +43,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/variants', variantRoutes);
 app.use('/api/carts', cartRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/roles', roleRoutes)
 
 //Lanzamiento del servidor
 app.listen(PORT, () =>{

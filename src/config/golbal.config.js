@@ -11,3 +11,11 @@ export const ROLES = {
 
 // Retorna el listado de los roles permitidos
 export const ALLOWED_ROLES = Object.values( ROLES );
+
+export const ROLE_LABELS = {
+    [ROLES.ADMIN] : 'Administrador',
+    [ROLES.EDITOR] : 'Editor',
+    [ROLES.AUTHOR] : 'Autor',
+    [ROLES.CONTRIBUTOR] : 'Contribuidor',
+    [ROLES.SUSCRIBER] : 'Suscriptor'
+}
