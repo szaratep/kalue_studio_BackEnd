@@ -9,17 +9,9 @@ const router = Router();
 
 //Definicion de las rutas para los usuarios
 router.get('/',  /*authenticationUser, authorizationUser([ROLES.ADMIN]),*/ getUser);
-router.get('/:idUser', 
-    //authenticationUser, authorizationUser([ROLES.ADMIN]),
-    getUserById);
-router.post ( '/', 
-    //authenticationUser, authorizationUser([ROLES.ADMIN]), 
-    createUser);
-router.delete ( '/:idUser', 
-    //authenticationUser, authorizationUser([ROLES.ADMIN]), 
-    deleteUser);
-router.patch ( '/:idUser', 
-    //authenticationUser, authorizationUser([ROLES.ADMIN]), 
-    updateUser);
+router.get('/:id', authenticationUser, authorizationUser([ROLES.ADMIN]), getUserById);
+router.post ( '/', authenticationUser, authorizationUser([ROLES.ADMIN]), createUser);
+router.delete ( '/:id', authenticationUser, authorizationUser([ROLES.ADMIN]), deleteUser);
+router.patch ( '/:id', authenticationUser, authorizationUser([ROLES.ADMIN]), updateUser);
 
 export default router;

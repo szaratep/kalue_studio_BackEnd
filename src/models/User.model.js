@@ -45,14 +45,20 @@ const UserSchema = new Schema({
     avatar: {
         type: String,
         default: ''
-    },
-    contacts: [{
-        type: Schema.Types.ObjectId,
-        ref: 'contact'
-    }]
+    }
 }, {
     versionKey: false,
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+// Virtual: lista los contactos del usuario leyendo Contact.userId como fuente de verdad,
+// en vez de mantener un arreglo duplicado que nadie sincronizaba.
+UserSchema.virtual('contacts', {
+    ref: 'contact',
+    localField: '_id',
+    foreignField: 'userId'
 });
 
 const UserModel = model('user', UserSchema);

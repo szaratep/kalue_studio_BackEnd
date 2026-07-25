@@ -5,11 +5,17 @@ const dbCreateOrders = async (newOrder) => {
 };
 
 const dbGetOrders = async () => {
-    return await orderModel.find().populate('products.productID', 'name price descripcion imagen category');
+    return await orderModel.find()
+        .populate('userId', 'name nickname email')
+        .populate('mailingAddress')
+        .populate('products.productID', 'name price description images category');
 };
 
 const dbGetOrdersById = async (orderId) => {
-    return await orderModel.findOne({_id: orderId}).populate('products.productID', 'name price descripcion imagen category');
+    return await orderModel.findOne({ _id: orderId })
+        .populate('userId', 'name nickname email')
+        .populate('mailingAddress')
+        .populate('products.productID', 'name price description images category');
 };
 
 const dbUpdateOrders = async(orderId, inputData) => {

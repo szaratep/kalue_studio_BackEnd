@@ -8,9 +8,9 @@ import authorizationUser from '../middlewares/authorization.middleware.js';
 const router = Router();
 
 router.get('/', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), getOrder);
-router.get('/:idOrder', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), getOrderById);
+router.get('/:id', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), getOrderById);
 router.post('/', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), createOrder);
-router.patch('/:idOrder', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), updateOrder);
-router.delete('/:idOrder', authenticationUser, authorizationUser([ROLES.ADMIN]), deleteOrder);
+router.patch('/:id', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), updateOrder);
+router.delete('/:id', authenticationUser, authorizationUser([ROLES.ADMIN]), deleteOrder);
 
 export default router;

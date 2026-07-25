@@ -3,7 +3,7 @@ import { Schema, model } from 'mongoose'
 const OrderSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'user',
         required: [true, 'La orden debe estar asociada a un usuario']
     },
 
@@ -15,7 +15,7 @@ const OrderSchema = new Schema({
 
     products: [{
         productID:{
-            type: [Schema.Types.ObjectId],
+            type: Schema.Types.ObjectId,
             ref: 'product',
             required: [true, 'La orden necesita un producto']
         },
@@ -28,7 +28,7 @@ const OrderSchema = new Schema({
 
     mailingAddress: {
         type: Schema.Types.ObjectId,
-        ref: 'contacts',
+        ref: 'contact',
         required: [true, 'La direccion de envio es obligatoria']
     },
 

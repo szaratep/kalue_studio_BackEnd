@@ -17,15 +17,15 @@ const ProductSchema = new Schema({
     },
 
     category: {
-        type: String,
-        enum: ['Tote', 'Bandolera', 'Cartera'],
+        type: Schema.Types.ObjectId,
+        ref: 'category',
         required: [true, 'La categoria es obligatoria']
     },
 
     material: {
-        type: String,
-        enum: ['Cuero', 'Cuerina', 'Sintético'],
-        default: 'Cuero'
+        type: Schema.Types.ObjectId,
+        ref: 'material',
+        required: [true, 'El material es obligatorio']
     },
 
     price: {
@@ -57,9 +57,18 @@ const ProductSchema = new Schema({
     }
 },{
     versionKey: false,
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
 
+// Virtual: permite obtener las variantes (color/talla/sku) de este producto
+// sin duplicar stock/precio a nivel de Product.
+ProductSchema.virtual('variants', {
+    ref: 'variant',
+    localField: '_id',
+    foreignField: 'productId'
+});
 
 const ProductModel = model('product', ProductSchema);
 

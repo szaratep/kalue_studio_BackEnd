@@ -1,6 +1,12 @@
 import { Schema, model } from 'mongoose';
 
 const VariantSchema = new Schema({
+    productId: {
+        type: Schema.Types.ObjectId,
+        ref: 'product',
+        required: [true, 'La variante debe estar asociada a un producto']
+    },
+
     color: {
         type: String,
         required: [true, 'El color de tu variante es obligatorio'],

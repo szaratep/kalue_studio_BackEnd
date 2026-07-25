@@ -2,7 +2,10 @@ import { dbCreateContact, dbDeleteContact, dbGetContact, dbGetContactById, dbUpd
 
 async function getContact(req, res) {
     try {
-        const data = await dbGetContact();
+        const userId = req.payload._id;
+
+        // Solo se listan los contactos del usuario autenticado, nunca los de todo el sistema.
+        const data = await dbGetContact(userId);
 
         if (data.length === 0) {
             throw new Error('No se encontraron contactos registrados en el sistema');
@@ -31,12 +34,17 @@ async function getContact(req, res) {
 
 async function getContactById(req, res) {
     try {
-        const id = req.params.idContact;
+        const id = req.params.id;
 
         const data = await dbGetContactById(id);
 
         if (!data) {
             throw new Error('El contacto solicitado no existe en el sistema');
+        }
+
+        // Un usuario solo puede ver sus propios contactos.
+        if (data.userId.toString() !== req.payload._id.toString()) {
+            throw new Error('No tienes permiso para ver este contacto');
         }
 
         res.status(200).json({
@@ -49,6 +57,12 @@ async function getContactById(req, res) {
 
         if (error.message.includes('El contacto solicitado no existe')) {
             return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.message.includes('No tienes permiso para ver este contacto')) {
+            return res.status(403).json({
                 msg: error.message
             });
         }
@@ -69,6 +83,10 @@ async function getContactById(req, res) {
 async function createContact(req, res) {
     try {
         const inputData = req.body;
+
+        // El userId siempre sale del usuario autenticado, nunca de lo que
+        // el cliente decida mandar en el body (evita crear contactos a nombre de otros).
+        inputData.userId = req.payload._id;
 
         const data = await dbCreateContact(inputData);
 
@@ -115,7 +133,7 @@ async function createContact(req, res) {
 
 async function updateContact(req, res) {
     try {
-        const id = req.params.idContact;
+        const id = req.params.id;
         const inputData = req.body;
 
         const existingContact = await dbGetContactById(id);
@@ -123,6 +141,14 @@ async function updateContact(req, res) {
         if (!existingContact) {
             throw new Error('El contacto que deseas actualizar no existe en el sistema');
         }
+
+        // Un usuario solo puede actualizar sus propios contactos.
+        if (existingContact.userId.toString() !== req.payload._id.toString()) {
+            throw new Error('No tienes permiso para actualizar este contacto');
+        }
+
+        // El userId no se puede reasignar desde el body (evita "transferir" el contacto a otro usuario).
+        delete inputData.userId;
 
         const data = await dbUpdateContact(id, inputData);
 
@@ -136,6 +162,12 @@ async function updateContact(req, res) {
 
         if (error.message.includes('El contacto que deseas actualizar no existe')) {
             return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.message.includes('No tienes permiso para actualizar este contacto')) {
+            return res.status(403).json({
                 msg: error.message
             });
         }
@@ -181,12 +213,17 @@ async function updateContact(req, res) {
 
 async function deleteContact(req, res) {
     try {
-        const id = req.params.idContact;
+        const id = req.params.id;
 
         const existingContact = await dbGetContactById(id);
 
         if (!existingContact) {
             throw new Error('El contacto que deseas eliminar no existe en el sistema');
+        }
+
+        // Un usuario solo puede eliminar sus propios contactos.
+        if (existingContact.userId.toString() !== req.payload._id.toString()) {
+            throw new Error('No tienes permiso para eliminar este contacto');
         }
 
         const data = await dbDeleteContact(id);
@@ -201,6 +238,12 @@ async function deleteContact(req, res) {
 
         if (error.message.includes('El contacto que deseas eliminar no existe')) {
             return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.message.includes('No tienes permiso para eliminar este contacto')) {
+            return res.status(403).json({
                 msg: error.message
             });
         }

@@ -30,7 +30,7 @@ async function getUser(req, res) {
 
 async function getUserById(req, res) {
     try {
-        const id = req.params.idUser;
+        const id = req.params.id;
         const data = await dbGetUserByID(id);
 
         if (!data){
@@ -67,7 +67,17 @@ async function createUser(req, res) {
     try {
         const inputData = req.body;
 
-        inputData.password = encryptedPassword(inputData.password);
+        if (!inputData.password) {
+            throw new Error('Se olvidó pasar la propiedad password');
+        }
+
+        const hashedPassword = encryptedPassword(inputData.password);
+
+        if (!hashedPassword) {
+            throw new Error('No se pudo procesar la contraseña');
+        }
+
+        inputData.password = hashedPassword;
 
         const data = await dbCreateUser(inputData);
 
@@ -79,6 +89,12 @@ async function createUser(req, res) {
 
         if (error.message.includes('Se olvidó pasar la propiedad password')) {
             return res.status(400).json({
+                msg: error.message
+            });
+        }
+
+        if (error.message.includes('No se pudo procesar la contraseña')) {
+            return res.status(500).json({
                 msg: error.message
             });
         }
@@ -117,7 +133,7 @@ async function createUser(req, res) {
 
 async function updateUser(req, res) {
     try{
-        const id = req.params.idUser;
+        const id = req.params.id;
         const inputData = req.body;
         const {email, nickname} = inputData;
 
@@ -129,6 +145,18 @@ async function updateUser(req, res) {
 
         if (existingUser.role === 'administrator') {
             throw new Error('Operación denegada: No está permitido modificar usuarios con rol de administrador');
+        }
+
+        // Si el body trae una contraseña nueva, se debe hashear antes de guardarla,
+        // igual que se hace en createUser. Nunca se guarda en texto plano.
+        if (inputData.password) {
+            const hashedPassword = encryptedPassword(inputData.password);
+
+            if (!hashedPassword) {
+                throw new Error('No se pudo procesar la nueva contraseña');
+            }
+
+            inputData.password = hashedPassword;
         }
 
         const data = await dbUpdateUser(id, inputData);
@@ -148,6 +176,12 @@ async function updateUser(req, res) {
 
          if (error.message.includes('No está permitido modificar usuarios con rol de administrador')) {
             return res.status(403).json({
+                msg: error.message
+            });
+        }
+
+        if (error.message.includes('No se pudo procesar la nueva contraseña')) {
+            return res.status(500).json({
                 msg: error.message
             });
         }
@@ -179,7 +213,7 @@ async function updateUser(req, res) {
 
 async function deleteUser(req, res) {
     try {
-        const id = req.params.idUser;
+        const id = req.params.id;
 
         const existingUser = await dbGetUserByID(id);
 

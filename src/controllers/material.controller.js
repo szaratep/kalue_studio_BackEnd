@@ -1,53 +1,50 @@
-import { dbCreateOrders, dbDeleteOrders, dbGetOrders, dbGetOrdersById, dbUpdateOrders } from '../service/order.service.js';
+import { dbCreateMaterial, dbDeleteMaterial, dbGetMaterialById, dbGetMaterials, dbUpdateMaterial } from "../service/material.service.js";
 
-async function getOrder(req, res) {
+async function getMaterial(req, res) {
     try {
-        const data = await dbGetOrders();
+        const data = await dbGetMaterials();
 
-        if (data.length === 0) {
-            throw new Error('No se encontraron órdenes registradas en el sistema');
+        if (data.length === 0){
+            throw new Error('No se encontraron materiales registrados en el sistema')
         }
 
         res.status(200).json({
-            msg: 'Se han listado las órdenes exitosamente',
+            msg: 'Se han listado los materiales exitosamente',
             data: data
-        });
-
+        })
     } catch (error) {
-        console.error(error);
+        console.error(error)
 
-        if (error.message.includes('No se encontraron órdenes registradas en el sistema')) {
+        if (error.message.includes('No se encontraron materiales registrados en el sistema')) {
             return res.status(404).json({
                 msg: error.message
             });
         }
 
         res.status(500).json({
-            msg: 'No se pudo obtener el listado de órdenes'
-        });
+            msg: 'No pudo obtener la lista de materiales'
+        })
     }
 }
 
-
-async function getOrderById(req, res) {
+async function getMaterialById(req, res) {
     try {
         const id = req.params.id;
+        const data = await dbGetMaterialById(id);
 
-        const data = await dbGetOrdersById(id);
-
-        if (!data) {
-            throw new Error('La orden solicitada no existe en el sistema');
+        if (!data){
+            throw new Error('El material solicitado no existe en el sistema')
         }
 
         res.status(200).json({
-            msg: 'Se encontró la orden exitosamente',
+            msg: 'Se encontro el material exitosamente',
             data: data
-        });
+        })
 
     } catch (error) {
-        console.error(error);
+        console.error(error)
 
-        if (error.message.includes('La orden solicitada no existe')) {
+        if (error.message.includes('El material solicitado no existe')) {
             return res.status(404).json({
                 msg: error.message
             });
@@ -55,28 +52,26 @@ async function getOrderById(req, res) {
 
         if (error.name === 'CastError') {
             return res.status(400).json({
-                msg: 'El formato del ID de orden provisto es inválido para la base de datos'
+                msg: 'El formato del ID de material provisto es inválido para la base de datos'
             });
         }
 
         res.status(500).json({
-            msg: 'No se pudo obtener la orden'
-        });
+            msg: 'No pudo obtener el material'
+        })
     }
 }
 
-
-async function createOrder(req, res) {
+async function createMaterial(req, res) {
     try {
         const inputData = req.body;
 
-        const data = await dbCreateOrders(inputData);
+        const data = await dbCreateMaterial(inputData);
 
         res.status(201).json({
-            msg: 'Orden creada exitosamente',
+            msg: 'Se ha registrado el material exitosamente',
             data: data
-        });
-
+        })
     } catch (error) {
         console.error(error);
 
@@ -88,7 +83,7 @@ async function createOrder(req, res) {
             });
 
             return res.status(400).json({
-                msg: 'Error de validación en propiedades de la orden',
+                msg: `Error de validacion en propiedades del material`,
                 errors: errorDetails
             });
         }
@@ -97,7 +92,7 @@ async function createOrder(req, res) {
             const duplicatedField = Object.keys(error.keyValue)[0];
 
             const errorMessages = {
-                numero: 'El número de orden ya se encuentra registrado'
+                name: 'Ya existe un material registrado con ese nombre'
             };
 
             return res.status(400).json({
@@ -106,34 +101,32 @@ async function createOrder(req, res) {
         }
 
         res.status(500).json({
-            msg: 'No se pudo crear la orden'
-        });
+            msg: "No se logro el registro del material"
+        })
     }
 }
 
-
-async function updateOrder(req, res) {
-    try {
+async function updateMaterial(req, res) {
+    try{
         const id = req.params.id;
         const inputData = req.body;
 
-        const existingOrder = await dbGetOrdersById(id);
+        const existingMaterial = await dbGetMaterialById(id);
 
-        if (!existingOrder) {
-            throw new Error('La orden que deseas actualizar no existe en el sistema');
-        }
+        if (!existingMaterial){
+            throw new Error('El material que deseas actualizar no existe en el sistema');
+        };
 
-        const data = await dbUpdateOrders(id, inputData);
+        const data = await dbUpdateMaterial(id, inputData);
 
         res.status(200).json({
-            msg: 'Se actualizó la orden exitosamente',
+            msg: 'Se actualiza el registro exitosamente',
             data: data
-        });
-
-    } catch (error) {
+        })
+    }catch(error){
         console.error(error);
 
-        if (error.message.includes('La orden que deseas actualizar no existe')) {
+        if (error.message.includes('El material que deseas actualizar no existe')) {
             return res.status(404).json({
                 msg: error.message
             });
@@ -141,7 +134,7 @@ async function updateOrder(req, res) {
 
         if (error.name === 'CastError') {
             return res.status(400).json({
-                msg: 'El formato del ID de orden provisto es inválido para la base de datos'
+                msg: 'El formato del ID de material provisto es inválido para la base de datos'
             });
         }
 
@@ -153,7 +146,7 @@ async function updateOrder(req, res) {
             });
 
             return res.status(400).json({
-                msg: 'Error de validación en propiedades de la orden',
+                msg: `Error de validacion en propiedades del material`,
                 errors: errorDetails
             });
         }
@@ -162,7 +155,7 @@ async function updateOrder(req, res) {
             const duplicatedField = Object.keys(error.keyValue)[0];
 
             const errorMessages = {
-                numero: 'El número de orden ya se encuentra registrado'
+                name: 'Ya existe un material registrado con ese nombre'
             };
 
             return res.status(400).json({
@@ -171,33 +164,31 @@ async function updateOrder(req, res) {
         }
 
         res.status(500).json({
-            msg: 'No se pudo actualizar la orden'
-        });
+            msg: 'No pudo actualizar el material'
+        })
     }
 }
 
-
-async function deleteOrder(req, res) {
+async function deleteMaterial(req, res) {
     try {
         const id = req.params.id;
 
-        const existingOrder = await dbGetOrdersById(id);
+        const existingMaterial = await dbGetMaterialById(id);
 
-        if (!existingOrder) {
-            throw new Error('La orden que deseas eliminar no existe en el sistema');
+        if (!existingMaterial){
+            throw new Error('El material que deseas eliminar no existe');
         }
 
-        const data = await dbDeleteOrders(id);
+        const data = await dbDeleteMaterial(id);
 
         res.status(200).json({
-            msg: 'La orden se eliminó exitosamente',
+            msg: 'El material se borro exitosamente',
             data: data
-        });
-
+        })
     } catch (error) {
         console.error(error);
 
-        if (error.message.includes('La orden que deseas eliminar no existe')) {
+        if (error.message.includes('El material que deseas eliminar no existe')) {
             return res.status(404).json({
                 msg: error.message
             });
@@ -205,21 +196,20 @@ async function deleteOrder(req, res) {
 
         if (error.name === 'CastError') {
             return res.status(400).json({
-                msg: 'El formato del ID de orden provisto es inválido para la base de datos'
+                msg: 'El formato del ID de material provisto es inválido para la base de datos'
             });
         }
 
         res.status(500).json({
-            msg: 'No se pudo eliminar la orden'
-        });
+            msg: 'No pudo borrar el material'
+        })
     }
 }
 
-
 export {
-    getOrder,
-    getOrderById,
-    createOrder,
-    updateOrder,
-    deleteOrder
+    getMaterial,
+    getMaterialById,
+    createMaterial,
+    updateMaterial,
+    deleteMaterial
 };

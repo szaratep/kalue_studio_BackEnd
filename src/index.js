@@ -13,6 +13,8 @@ import variantRoutes from './routes/variant.routes.js';
 import cartRoutes from './routes/cart.routes.js';
 import authRoutes from './routes/auth.routes.js'
 import roleRoutes from './routes/roles.routes.js'
+import categoryRoutes from './routes/category.routes.js';
+import materialRoutes from './routes/material.routes.js'
 
 
 const app = express();
@@ -43,7 +45,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/variants', variantRoutes);
 app.use('/api/carts', cartRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/roles', roleRoutes)
+app.use('/api/roles', roleRoutes);
+app.use('/api/category', categoryRoutes);
+app.use('/api/material', materialRoutes);
 
 //Lanzamiento del servidor
 app.listen(PORT, () =>{

@@ -17,14 +17,7 @@ const dbDeleteCart = async (id) => {
 }
 
 const dbUpdateCart = async (id, inputData) => {
-    return await CartModel.findByIdAndUpdate(
-        id,
-        inputData,
-        {
-            returnDocument: 'after',
-            runValidators: true
-        }
-    );
+    return await CartModel.findByIdAndUpdate(id, inputData, { returnDocument: 'after', runValidators: true});
 }
 
 export {

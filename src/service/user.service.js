@@ -1,16 +1,17 @@
 import UserModel from "../models/User.model.js";
 
+
 // Services: Su funcion es comunicarse con la base de datos
 const dbCreateUser = async (newUser) => {
     return await UserModel.create(newUser);  
 }
 
 const dbGetUsers = async () => {
-    return await UserModel.find().populate('contacts');
+    return await UserModel.find().select('-password').populate('contacts');
 }
 
 const dbGetUserByID = async (userId) =>{
-    return await UserModel.findOne({ _id: userId }).populate('contacts');
+    return await UserModel.findOne({ _id: userId }).select('-password').populate('contacts');
 }
 
 const dbGetUserByEmail = async (email) => {
