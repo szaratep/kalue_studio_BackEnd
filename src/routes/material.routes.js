@@ -8,8 +8,14 @@ const router = Router();
 
 router.get( '/', getMaterial);
 router.get( '/:idMaterial', getMaterialById);
-router.post( '/', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), createMaterial );
-router.patch( '/:idMaterial', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), updateMaterial);
-router.delete( '/:idMaterial', authenticationUser, authorizationUser([ROLES.ADMIN]), deleteMaterial);
+router.post( '/', 
+    // authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]),
+     createMaterial );
+router.patch( '/:idMaterial',
+    //  authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]),
+      updateMaterial);
+router.delete( '/:idMaterial', 
+    // authenticationUser, authorizationUser([ROLES.ADMIN]),
+     deleteMaterial);
 
 export default router;

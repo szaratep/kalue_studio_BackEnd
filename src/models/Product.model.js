@@ -40,11 +40,11 @@ const ProductSchema = new Schema({
         min: [0, 'El stock no puede ser negativo']
     },
 
-    images: [{
+    images: {
         type: String,
         min : [0, 'Las imagenes no pueden ser negativas'],
         max : [5, 'Solo puedes colocar 5 imagenes']
-    }],
+    },
 
     isFeatured: {
         type: Boolean,

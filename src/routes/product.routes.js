@@ -7,11 +7,14 @@ import { ROLES } from '../config/golbal.config.js';
 
 const router = Router();
 
-router.get( '/', getProduct);
+router.get( '/', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]) ,getProduct);
 router.get( '/:id', getProductById);
-router.post( '/', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), createProduct );
-router.patch( '/:id', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), updateProduct );
-router.delete( '/:id', authenticationUser, authorizationUser([ROLES.ADMIN]), deleteProduct );
+router.post( '/', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), 
+    createProduct );
+router.patch( '/:id', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]),
+     updateProduct );
+router.delete( '/:id', authenticationUser, authorizationUser([ROLES.ADMIN]), 
+    deleteProduct );
 
 
 export default router;

@@ -8,8 +8,14 @@ const router = Router();
 
 router.get( '/', getCategory);
 router.get( '/:id', getCategoryById);
-router.post( '/', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), createCategory );
-router.patch( '/:id', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), updateCategory);
-router.delete( '/:id', authenticationUser, authorizationUser([ROLES.ADMIN]), deleteCategory);
+router.post( '/', 
+    // authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]),
+     createCategory );
+router.patch( '/:id',
+    //  authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]),
+      updateCategory);
+router.delete( '/:id', 
+    // authenticationUser, authorizationUser([ROLES.ADMIN]), 
+    deleteCategory);
 
 export default router;
