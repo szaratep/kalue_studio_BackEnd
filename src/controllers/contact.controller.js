@@ -79,7 +79,6 @@ async function getContactById(req, res) {
     }
 }
 
-
 async function createContact(req, res) {
     try {
         const inputData = req.body;
@@ -266,5 +265,5 @@ export {
     getContactById,
     createContact,
     updateContact,
-    deleteContact
+    deleteContact,
 };

@@ -43,7 +43,7 @@ app.use('/api/contacts', contactsRoutes);
 app.use('/api/orders', ordersRoutes)
 app.use('/api/products', productRoutes);
 app.use('/api/variants', variantRoutes);
-app.use('/api/carts', cartRoutes);
+app.use('/api/cart', cartRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/category', categoryRoutes);

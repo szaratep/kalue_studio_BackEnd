@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { createUser } from "../controllers/user.controller.js";
+import { createUser, createUserPublic } from "../controllers/user.controller.js";
 import { loginUser, reNewToken } from "../controllers/auth.controller.js";
 import authenticationUser from "../middlewares/authentication.middleware.js";
 import removeRol from "../middlewares/without-rol.middleware.js";
@@ -10,7 +10,7 @@ const router = Router();
 
 // http:localhost:3000/api/auht
 router.post('/login', loginUser);
-router.post ('/register', removeRol, createUser);
+router.post ('/register', removeRol, createUserPublic);
 router.get('/renew-token', authenticationUser, reNewToken); 
 
 export default router;

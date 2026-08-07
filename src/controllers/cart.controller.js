@@ -70,6 +70,10 @@ const createCart = async (req, res) => {
     try {
         const inputData = req.body;
 
+        const userId = req.user._id;
+
+        inputData.userId = userId;
+
         const data = await insertCart(inputData);
 
         res.status(201).json({
@@ -115,7 +119,13 @@ const createCart = async (req, res) => {
 const updateCart = async (req, res) => {
     try {
         const id = req.params.id;
-        const inputData = req.body;
+        const { productId, quantity } = req.body;
+
+        if (!productId || quantity === undefined) {
+            return res.status(400).json({
+                msg: 'Se necesita el productId y la cantidad para actualizar el carrito'
+            });
+        }
 
         const existingCart = await dbGetCartById(id);
 
@@ -123,7 +133,7 @@ const updateCart = async (req, res) => {
             throw new Error('El carrito que deseas actualizar no existe en el sistema');
         }
 
-        const data = await dbUpdateCart(id, inputData);
+        const data = await dbUpdateCart(id, { productId, quantity });
 
         res.status(200).json({
             msg: 'Se actualizó el carrito exitosamente',
@@ -141,7 +151,7 @@ const updateCart = async (req, res) => {
 
         if (error.name === 'CastError') {
             return res.status(400).json({
-                msg: 'El formato del ID de carrito provisto es inválido para la base de datos'
+                msg: 'El formato del ID de carrito o del producto es inválido para la base de datos'
             });
         }
 
