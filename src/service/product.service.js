@@ -24,7 +24,7 @@ const dbDeleteProduct = async (id) => {
     return await ProductModel.findOneAndDelete ({ _id: id});
 }
 const dbUpdateProduct = async (id, inputData) => {
-    return await ProductModel.findOneAndUpdate ({ _id: id}, inputData);
+    return await ProductModel.findOneAndUpdate ({ _id: id}, inputData, { new: true, runValidators: true });
 
 }
 export {
