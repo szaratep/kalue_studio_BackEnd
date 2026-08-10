@@ -21,7 +21,7 @@ const dbGetOrCreateCartByUserId = async (userId) => {
     return await CartModel.findOneAndUpdate(
         { userId },
         { $setOnInsert: { userId, items: [] } },
-        { new: true, upsert: true, runValidators: true }
+        { returnDocument: 'after', upsert: true, runValidators: true }
     ).populate(CART_POPULATE);
 }
 
@@ -53,7 +53,7 @@ const dbUpdateCart = async (id, inputData) => {
     let updatedCart = await CartModel.findOneAndUpdate(
         { _id: id, 'items.productId': productId },
         { $inc: { 'items.$.quantity': quantity } },
-        { new: true, runValidators: true }
+        { returnDocument: 'after', runValidators: true }
     );
 
     if (updatedCart) {
@@ -65,7 +65,7 @@ const dbUpdateCart = async (id, inputData) => {
             updatedCart = await CartModel.findOneAndUpdate(
                 { _id: id },
                 { $pull: { items: { productId } } },
-                { new: true }
+                { returnDocument: 'after' }
             );
         }
 
@@ -75,7 +75,7 @@ const dbUpdateCart = async (id, inputData) => {
             updatedCart = await CartModel.findOneAndUpdate(
                 { _id: id },
                 { $push: { items: { productId, quantity } } },
-                { new: true, runValidators: true }
+                { returnDocument: 'after', runValidators: true }
             );
         } else {
             // Si mandan cantidad <= 0 para un producto que no existe, no hay nada que hacer
@@ -93,7 +93,7 @@ const dbRemoveCartItem = async (id, productId) => {
     const updatedCart = await CartModel.findOneAndUpdate(
         { _id: id },
         { $pull: { items: { productId } } },
-        { new: true }
+        { returnDocument: 'after' }
     );
 
     if (!updatedCart) return null;
