@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const DB_MONGO = process.env.DB_URI_LOCAL
+const DB_MONGO = process.env.DB_URI_VIRT
 
 async function dbConect (){
     try{
