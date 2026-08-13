@@ -1,8 +1,8 @@
-import { dbCreateOrders, dbDeleteOrders, dbGetOrders, dbGetOrdersById, dbUpdateOrders } from '../service/order.service.js';
+import { dbCreateOrders, dbDeleteOrders, dbgetOrderByIdUser, dbGetOrders, dbGetOrdersById, dbUpdateOrders } from '../service/order.service.js';
 
 async function getOrder(req, res) {
     try {
-        const data = await dbGetOrders();
+        const data = await dbgetOrderByIdUser(req.payload._id);
 
         if (data.length === 0) {
             throw new Error('No se encontraron órdenes registradas en el sistema');
@@ -69,6 +69,9 @@ async function getOrderById(req, res) {
 async function createOrder(req, res) {
     try {
         const inputData = req.body;
+        const userId = req.payload._id;
+
+        inputData.userId = userId
 
         const data = await dbCreateOrders(inputData);
 

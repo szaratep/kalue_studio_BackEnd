@@ -11,6 +11,13 @@ const dbGetOrders = async () => {
         .populate('products.productID', 'name price description images category');
 };
 
+const dbgetOrderByIdUser = async (userId) => {
+    return await orderModel.find({ userId: userId })
+        .populate('userId', 'name nickname email')
+        .populate('mailingAddress')
+        .populate('products.productID', 'name price description images category');
+}
+
 const dbGetOrdersById = async (orderId) => {
     return await orderModel.findOne({ _id: orderId })
         .populate('userId', 'name nickname email')
@@ -31,5 +38,6 @@ export {
     dbGetOrders,
     dbGetOrdersById,
     dbUpdateOrders,
-    dbDeleteOrders
+    dbDeleteOrders,
+    dbgetOrderByIdUser
 };

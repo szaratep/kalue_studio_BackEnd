@@ -37,15 +37,6 @@ const OrderSchema = new Schema({
         default: 0
     },
 
-    discount: {
-        type: Number,
-        default: 0
-    },
-
-    shippingCost: {
-        type: Number,
-        default: 0
-    },
 
     total: {
         type: Number,

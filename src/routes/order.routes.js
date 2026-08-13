@@ -7,9 +7,9 @@ import authorizationUser from '../middlewares/authorization.middleware.js';
 
 const router = Router();
 
-router.get('/', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), getOrder);
-router.get('/:id', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), getOrderById);
-router.post('/', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), createOrder);
+router.get('/', authenticationUser, authorizationUser([ROLES.SUSCRIBER]), getOrder);
+router.get('/:id', authenticationUser, authorizationUser([ROLES.SUSCRIBER]), getOrderById);
+router.post('/', authenticationUser, authorizationUser([ROLES.SUSCRIBER]), createOrder);
 router.patch('/:id', authenticationUser, authorizationUser([ROLES.ADMIN, ROLES.CONTRIBUTOR, ROLES.EDITOR]), updateOrder);
 router.delete('/:id', authenticationUser, authorizationUser([ROLES.ADMIN]), deleteOrder);
 
