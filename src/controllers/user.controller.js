@@ -227,6 +227,134 @@ async function createUserPublic(req, res) {
     }
 }
 
+async function getUserByIdPublic(req, res) {
+    try {
+        const id = req.payload._id;
+        const data = await dbGetUserByID(id);
+
+        if (!data){
+            throw new Error('El usuario solicitado no existe en el sistema')
+        }
+
+        res.status(200).json({
+            msg: 'Se encontro el usuario exitosamente',
+            data: data
+        })
+
+    } catch (error) {
+        console.error(error)
+
+        if (error.message.includes('El usuario solicitado no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({
+                msg: 'El formato del ID de usuario provisto es inválido para la base de datos'
+            });
+        }
+
+        res.status(500).json({
+            msg: 'No pudo obtener el usuario'
+        })
+    }
+}
+
+async function updateUserSelf(req, res) {
+    try {
+        // El id siempre sale del usuario autenticado, nunca de los parámetros de la URL,
+        // así se evita que un usuario edite a otro usuario distinto de sí mismo.
+        const id = req.payload._id;
+        const inputData = req.body;
+ 
+        // Campos que un usuario nunca puede autoasignarse (evita escalar privilegios
+        // o desactivar su propia cuenta desde este endpoint de autoedición).
+        delete inputData._id;
+        delete inputData.role;
+        delete inputData.status;
+        delete inputData.createdAt;
+        delete inputData.updatedAt;
+        delete inputData.contacts;
+ 
+        const existingUser = await dbGetUserByID(id);
+ 
+        if (!existingUser) {
+            throw new Error('El usuario que deseas actualizar no existe en el sistema');
+        }
+ 
+        // Si el body trae una contraseña nueva, se hashea antes de guardarla.
+        if (inputData.password) {
+            const hashedPassword = encryptedPassword(inputData.password);
+ 
+            if (!hashedPassword) {
+                throw new Error('No se pudo procesar la nueva contraseña');
+            }
+ 
+            inputData.password = hashedPassword;
+        } else {
+            delete inputData.password;
+        }
+ 
+        await dbUpdateUser(id, inputData);
+ 
+        // Se retorna el usuario ya saneado (sin password) y con los contactos
+        // poblados, igual que en getUserByIdPublic.
+        const data = await dbGetUserByID(id);
+ 
+        res.status(200).json({
+            msg: 'Se actualizó tu información exitosamente',
+            data: data
+        });
+ 
+    } catch (error) {
+        console.error(error);
+ 
+        if (error.message.includes('El usuario que deseas actualizar no existe')) {
+            return res.status(404).json({
+                msg: error.message
+            });
+        }
+ 
+        if (error.message.includes('No se pudo procesar la nueva contraseña')) {
+            return res.status(500).json({
+                msg: error.message
+            });
+        }
+ 
+        if (error.name === 'ValidationError') {
+            const errorDetails = {};
+ 
+            Object.entries(error.errors).forEach(([field, errObj]) => {
+                errorDetails[field] = errObj.message;
+            });
+ 
+            return res.status(400).json({
+                msg: 'Error de validación en propiedades del usuario',
+                errors: errorDetails
+            });
+        }
+ 
+        if (error.code === 11000) {
+            const duplicatedField = Object.keys(error.keyValue)[0];
+ 
+            const errorMessages = {
+                email: 'El correo electrónico ya se encuentra registrado por otro usuario',
+                nickname: 'El nickname ya se encuentra en uso por otro usuario'
+            };
+ 
+            return res.status(400).json({
+                msg: errorMessages[duplicatedField] || 'Ya existe un registro con algunos de estos valores únicos'
+            });
+        }
+ 
+        res.status(500).json({
+            msg: 'No se pudo actualizar tu información'
+        });
+    }
+}
+
 async function updateUser(req, res) {
     try{
         const id = req.params.id;
@@ -361,5 +489,7 @@ export {
     updateUser,
     deleteUser,
     createUser,
-    createUserPublic
+    createUserPublic,
+    getUserByIdPublic,
+    updateUserSelf
 };
