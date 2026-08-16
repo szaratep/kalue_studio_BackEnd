@@ -19,3 +19,8 @@ export const ROLE_LABELS = {
     [ROLES.CONTRIBUTOR] : 'Contribuidor',
     [ROLES.SUSCRIBER] : 'Suscriptor'
 }
+
+// Tasa de impuesto aplicada al checkout (8%). Se calcula siempre en el
+// backend a partir de los precios reales de los productos; nunca se confia
+// en un total/subtotal que venga del cliente.
+export const TAX_RATE = 0.08;

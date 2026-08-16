@@ -1,4 +1,6 @@
-import { dbCreateOrders, dbDeleteOrders, dbgetOrderByIdUser, dbGetOrders, dbGetOrdersById, dbUpdateOrders } from '../service/order.service.js';
+import { dbCreateOrderFromCart, dbDeleteOrders, dbgetOrderByIdUser, dbGetOrders, dbGetOrdersById, dbUpdateOrders } from '../service/order.service.js';
+import { dbGetContactById } from '../service/contact.service.js';
+import { ROLES } from '../config/golbal.config.js';
 
 async function getOrder(req, res) {
     try {
@@ -39,6 +41,15 @@ async function getOrderById(req, res) {
             throw new Error('La orden solicitada no existe en el sistema');
         }
 
+        // Un suscriptor solo puede ver sus propias ordenes. Un administrador
+        // puede ver cualquiera (soporte/back-office).
+        const isOwner = data.userId?._id?.toString() === req.payload._id.toString();
+        const isAdmin = req.payload.role === ROLES.ADMIN;
+
+        if (!isOwner && !isAdmin) {
+            throw new Error('No tienes permiso para ver esta orden');
+        }
+
         res.status(200).json({
             msg: 'Se encontró la orden exitosamente',
             data: data
@@ -49,6 +60,12 @@ async function getOrderById(req, res) {
 
         if (error.message.includes('La orden solicitada no existe')) {
             return res.status(404).json({
+                msg: error.message
+            });
+        }
+
+        if (error.message.includes('No tienes permiso para ver esta orden')) {
+            return res.status(403).json({
                 msg: error.message
             });
         }
@@ -66,14 +83,38 @@ async function getOrderById(req, res) {
 }
 
 
+// Checkout real: NO se confia en products/subtotal/total/paymentReference
+// que venga del cliente. Solo se aceptan datos que el cliente SI controla
+// legitimamente (direccion de envio, metodo de pago, notas); todo lo demas
+// (items comprados, precios, stock, total, referencia de pago simulada) se
+// reconstruye en el servidor a partir del carrito real del usuario.
 async function createOrder(req, res) {
     try {
-        const inputData = req.body;
         const userId = req.payload._id;
+        const { mailingAddress, paymentMethod, notes } = req.body;
 
-        inputData.userId = userId
+        if (!mailingAddress) {
+            return res.status(400).json({
+                msg: 'Se necesita una dirección de envío para procesar tu pedido'
+            });
+        }
 
-        const data = await dbCreateOrders(inputData);
+        // La direccion de envio debe existir y pertenecer al usuario que compra.
+        const contact = await dbGetContactById(mailingAddress);
+
+        if (!contact) {
+            return res.status(404).json({
+                msg: 'La dirección de envío seleccionada no existe'
+            });
+        }
+
+        if (contact.userId.toString() !== userId.toString()) {
+            return res.status(403).json({
+                msg: 'No puedes usar una dirección de envío que no te pertenece'
+            });
+        }
+
+        const data = await dbCreateOrderFromCart(userId, { mailingAddress, paymentMethod, notes });
 
         res.status(201).json({
             msg: 'Orden creada exitosamente',
@@ -82,6 +123,18 @@ async function createOrder(req, res) {
 
     } catch (error) {
         console.error(error);
+
+        if (error.message.includes('carrito esta vacio')) {
+            return res.status(400).json({
+                msg: error.message
+            });
+        }
+
+        if (error.message.includes('ya no esta disponible') || error.message.includes('unidades disponibles') || error.message.includes('stock cambio')) {
+            return res.status(409).json({
+                msg: error.message
+            });
+        }
 
         if (error.name === 'ValidationError') {
             const errorDetails = {};
@@ -96,15 +149,9 @@ async function createOrder(req, res) {
             });
         }
 
-        if (error.code === 11000) {
-            const duplicatedField = Object.keys(error.keyValue)[0];
-
-            const errorMessages = {
-                numero: 'El número de orden ya se encuentra registrado'
-            };
-
+        if (error.name === 'CastError') {
             return res.status(400).json({
-                msg: errorMessages[duplicatedField] || 'Ya existe un registro con algunos de estos valores únicos'
+                msg: 'El formato de la dirección de envío es inválido'
             });
         }
 

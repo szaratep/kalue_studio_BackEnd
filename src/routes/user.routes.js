@@ -3,12 +3,12 @@ import {Router} from 'express'
 import { getUser, createUser, deleteUser, updateUser, getUserById, getUserByIdPublic, updateUserSelf } from '../controllers/user.controller.js';
 import authenticationUser from '../middlewares/authentication.middleware.js';
 import authorizationUser from '../middlewares/authorization.middleware.js';
-import { ROLES } from '../config/golbal.config.js';
+import { ALLOWED_ROLES, ROLES } from '../config/golbal.config.js';
 
 const router = Router();
 
 //Ruta publica para obtener un usuraio especifico
-router.get('/details', authenticationUser,authorizationUser([ROLES.SUSCRIBER]), getUserByIdPublic);
+router.get('/details', authenticationUser,authorizationUser(ALLOWED_ROLES), getUserByIdPublic);
 router.patch('/details', authenticationUser, authorizationUser([ROLES.SUSCRIBER]), updateUserSelf);
 
 //Definicion de las rutas para los usuarios

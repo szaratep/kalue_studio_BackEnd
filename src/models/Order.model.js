@@ -23,6 +23,15 @@ const OrderSchema = new Schema({
             type: Number,
             required: true,
             min: [1, 'Se necesita al menos un producto en la orden']
+        },
+        // Precio unitario "congelado" al momento de la compra. Se copia del
+        // producto en el instante del checkout y ya no cambia aunque el
+        // precio del producto cambie despues, para que la orden conserve
+        // fielmente lo que el cliente realmente pago.
+        unitPrice: {
+            type: Number,
+            required: [true, 'El precio unitario al momento de la compra es obligatorio'],
+            min: [0, 'El precio unitario no puede ser negativo']
         }
     }],
 
@@ -37,6 +46,10 @@ const OrderSchema = new Schema({
         default: 0
     },
 
+    tax: {
+        type: Number,
+        default: 0
+    },
 
     total: {
         type: Number,

@@ -9,7 +9,6 @@ import userRoutes from './routes/user.routes.js';
 import contactsRoutes from './routes/contact.routes.js'
 import ordersRoutes from './routes/order.routes.js'
 import productRoutes from './routes/product.routes.js'
-import variantRoutes from './routes/variant.routes.js';
 import cartRoutes from './routes/cart.routes.js';
 import authRoutes from './routes/auth.routes.js'
 import roleRoutes from './routes/roles.routes.js'
@@ -42,7 +41,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/contacts', contactsRoutes);
 app.use('/api/orders', ordersRoutes)
 app.use('/api/products', productRoutes);
-app.use('/api/variants', variantRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', roleRoutes);

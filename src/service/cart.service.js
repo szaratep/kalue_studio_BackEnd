@@ -17,13 +17,40 @@ const dbGetCartById = async (id) => {
 
 // Get-or-create: nunca falla por "carrito no existe" y nunca duplica gracias
 // al indice unique en userId (evita condiciones de carrera entre requests paralelos).
+//
+// Ademas se "autolimpia": si algun item quedo apuntando a un producto que ya
+// no existe (fue borrado del catalogo despues de agregarse al carrito), ese
+// item se elimina del carrito en BD antes de devolverlo. Sin esto, el
+// populate deja productId en null y el frontend no puede ni mostrarlo ni
+// eliminarlo (queda "atascado").
 const dbGetOrCreateCartByUserId = async (userId) => {
-    return await CartModel.findOneAndUpdate(
+    const cart = await CartModel.findOneAndUpdate(
         { userId },
         { $setOnInsert: { userId, items: [] } },
         { returnDocument: 'after', upsert: true, runValidators: true }
     ).populate(CART_POPULATE);
+
+    const orphanItemIds = cart.items
+        .filter((item) => !item.productId)
+        .map((item) => item._id);
+
+    if (orphanItemIds.length === 0) {
+        return cart;
+    }
+
+    return await CartModel.findOneAndUpdate(
+        { _id: cart._id },
+        { $pull: { items: { _id: { $in: orphanItemIds } } } },
+        { returnDocument: 'after' }
+    ).populate(CART_POPULATE);
 }
+
+// Version "cruda" (sin populate) apta para usarse dentro de una transaccion:
+// el checkout solo necesita productId/quantity, y necesita poder pasar la
+// sesion activa a la consulta.
+const dbGetRawCartByUserId = async (userId, session = null) => {
+    return await CartModel.findOne({ userId }).session(session);
+};
 
 const dbDeleteCart = async (id) => {
     return await CartModel.findOneAndDelete({ _id: id });
@@ -109,7 +136,7 @@ const dbRemoveCartItem = async (id, productId) => {
 
 const dbUpdateCartByUserId = async (userId, inputData) => {
     const cart = await dbGetOrCreateCartByUserId(userId);
-    return await dbUpdateCart(cart._id, inputData);
+    return await dbUpdateCart(cart._id, inputData,  { returnDocument: 'after', runValidators: true });
 };
 
 const dbRemoveCartItemByUserId = async (userId, productId) => {
@@ -119,6 +146,17 @@ const dbRemoveCartItemByUserId = async (userId, productId) => {
 
 const dbDeleteCartByUserId = async (userId) => {
     return await CartModel.findOneAndDelete({ userId });
+};
+
+// Vacia los items del carrito (sin borrar el documento) dentro de una
+// transaccion de checkout. Se usa junto con dbCreateOrderFromCart para que
+// "crear orden + descontar stock + vaciar carrito" ocurran todos o ninguno.
+const dbEmptyCartItems = async (cartId, session = null) => {
+    return await CartModel.findOneAndUpdate(
+        { _id: cartId },
+        { $set: { items: [] } },
+        { returnDocument: 'after', runValidators: true , session }
+    );
 };
 
 export {
@@ -131,5 +169,7 @@ export {
     dbRemoveCartItem,
     dbUpdateCartByUserId,
     dbRemoveCartItemByUserId,
-    dbDeleteCartByUserId
+    dbDeleteCartByUserId,
+    dbEmptyCartItems,
+    dbGetRawCartByUserId
 };
