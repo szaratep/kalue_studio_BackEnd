@@ -28,6 +28,8 @@ app.use(cors({
     origin: 'http://localhost:4200'
 }))
 
+app.use('/uploads', express.static('public/uploads'));
+
 //Endpoint Health
 app.get ("/health", (req, res) => {
     res.json({
