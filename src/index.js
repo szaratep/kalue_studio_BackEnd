@@ -24,9 +24,9 @@ dbConect();
 
 //Middelwares
 app.use(express.json()); //habilita la interpretacion de objetos json
-app.use(cors({
-    //origin: 'http://localhost:4200'
-}))
+app.use(cors(
+    //{origin: 'http://localhost:4200'}
+))
 
 //Endpoint Health
 app.get ("/health", (req, res) => {
