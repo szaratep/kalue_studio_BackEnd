@@ -68,6 +68,14 @@ async function createUser(req, res) {
     try {
         const inputData = req.body;
 
+        if (req.file) {
+            inputData.avatar = `uploads/avatars/${req.file.filename}`;
+        }
+
+         if (typeof inputData.status === 'string') {
+            inputData.status = inputData.status === 'true';
+        }
+
         if (!inputData.password) {
             throw new Error('Se olvidó pasar la propiedad password');
         }
@@ -114,6 +122,11 @@ async function createUser(req, res) {
         }
 
         if (error.code === 11000) {
+
+            if (req.file) {
+                await deleteOldImage(`uploads/avatars/${req.file.filename}`);
+            }
+
             const duplicatedField = Object.keys(error.keyValue)[0];
 
             const errorMessages = {
