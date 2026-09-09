@@ -10,7 +10,7 @@ const router = Router();
 
 //Ruta publica para obtener un usuraio especifico
 router.get('/details', authenticationUser,authorizationUser(ALLOWED_ROLES), getUserByIdPublic);
-router.patch('/details', authenticationUser, authorizationUser([ROLES.SUSCRIBER]), updateUserSelf);
+router.patch('/details', authenticationUser, authorizationUser([ROLES.SUSCRIBER]),handleUploadAvatar, updateUserSelf);
 
 //Definicion de las rutas para los usuarios
 router.get('/',  authenticationUser, authorizationUser([ROLES.ADMIN]), getUser);

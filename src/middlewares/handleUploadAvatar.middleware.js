@@ -2,7 +2,7 @@ import { uploadAvatar } from "./uploadAvatar.middleware.js";
 
 // Middleware helper para capturar y formatear errores de Multer para avatares (tamaño > 2MB o tipo MIME inválido)
 const handleUploadAvatar = (req, res, next) => {
-    uploadAvatar.single('avatarUrl')(req, res, (err) => {
+    uploadAvatar.single('avatar')(req, res, (err) => {
         if (err) {
             if (err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(400).json({
