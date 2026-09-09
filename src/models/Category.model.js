@@ -22,6 +22,12 @@ const CategorySchema = new Schema({
         ref: 'category',
         default: null
     },
+
+    avatar: {
+        type: String,
+        default: 'uploads/avatars/default-avatar.png'
+    },
+
     isActive: {
         type: Boolean,
         default: true
