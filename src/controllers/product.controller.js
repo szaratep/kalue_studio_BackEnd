@@ -68,7 +68,26 @@ const getProductById = async (req, res) => {
 
 const createProduct = async (req, res) => {
     try {
-        const inputData = req.body;
+
+        // 1. VALIDACIÓN: Verificar que vengan imágenes en req.files
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+                msg: 'Error de validación en los datos del producto',
+                errors: { images: 'El producto debe incluir al menos una (1) imagen' }
+            });
+        }
+        // 2. CONSTRUIR ARREGLO DE IMÁGENES: Mapear req.files para MongoDB
+        const imageObjects = req.files.map((file, index) => ({
+            url: `/uploads/products/${file.filename}`,
+            isMain: index === 0 // La primera imagen será la principal por defecto
+        }));
+        // 3. MEZCLAR CON EL BODY: Agregar el arreglo 'images' al objeto inputData
+        const inputData = {
+            ...req.body,
+            images: imageObjects
+        };
+
+        // 4. INSERTAR PRODUCTO: Llamar a la función de servicio para insertar en la base de datos
 
         const data = await insertProduct(inputData);
 

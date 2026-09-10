@@ -40,11 +40,28 @@ const ProductSchema = new Schema({
         min: [0, 'El stock no puede ser negativo']
     },
 
-    images: [{
-        type: String,
-        min : [0, 'Las imagenes no pueden ser negativas'],
-        max : [5, 'Solo puedes colocar 5 imagenes']
-    }],
+    // Estructura para el arreglo de imágenes con validadores y mensajes de error personalizados
+    images: {
+        type: [{
+            url: {
+                type: String,
+                required: [true, 'La URL de la imagen es obligatoria']
+            },
+            isMain: {
+                type: Boolean,
+                default: false
+            }
+        }],
+        validate: [
+            {
+                validator: function (val) {
+                    // Restricción máxima de 9 imágenes (permite 0 imágenes al eliminar todas)
+                    return Array.isArray(val) && val.length <= 9;
+                },
+                message: 'No se pueden asociar más de nueve (9) imágenes a un producto'
+            }
+        ]
+    },
 
     isFeatured: {
         type: Boolean,
