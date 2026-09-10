@@ -23,7 +23,7 @@ const CategorySchema = new Schema({
         default: null
     },
 
-    avatar: {
+    image: {
         type: String,
         default: 'uploads/avatars/default-avatar.png'
     },
