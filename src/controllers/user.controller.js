@@ -1,4 +1,5 @@
 import { encryptedPassword } from "../helpers/bcrypt.helper.js";
+import { deleteOldImage } from "../helpers/file-storage.js";
 import { dbCreateContact } from "../service/contact.service.js";
 import { dbCreateUser, dbDeleteUser, dbGetUserByID, dbGetUsers, dbUpdateUser } from "../service/user.service.js";
 
@@ -68,6 +69,14 @@ async function createUser(req, res) {
     try {
         const inputData = req.body;
 
+        if (req.file) {
+            inputData.avatar = `uploads/avatars/${req.file.filename}`;
+        }
+
+         if (typeof inputData.status === 'string') {
+            inputData.status = inputData.status === 'true';
+        }
+
         if (!inputData.password) {
             throw new Error('Se olvidó pasar la propiedad password');
         }
@@ -114,6 +123,11 @@ async function createUser(req, res) {
         }
 
         if (error.code === 11000) {
+
+            if (req.file) {
+                await deleteOldImage(`uploads/avatars/${req.file.filename}`);
+            }
+
             const duplicatedField = Object.keys(error.keyValue)[0];
 
             const errorMessages = {
@@ -264,11 +278,9 @@ async function getUserByIdPublic(req, res) {
 
 async function updateUserSelf(req, res) {
     try {
-        // El id siempre sale del usuario autenticado, nunca de los parámetros de la URL,
-        // así se evita que un usuario edite a otro usuario distinto de sí mismo.
         const id = req.payload._id;
         const inputData = req.body;
- 
+
         // Campos que un usuario nunca puede autoasignarse (evita escalar privilegios
         // o desactivar su propia cuenta desde este endpoint de autoedición).
         delete inputData._id;
@@ -277,78 +289,90 @@ async function updateUserSelf(req, res) {
         delete inputData.createdAt;
         delete inputData.updatedAt;
         delete inputData.contacts;
- 
+
         const existingUser = await dbGetUserByID(id);
- 
+
         if (!existingUser) {
             throw new Error('El usuario que deseas actualizar no existe en el sistema');
         }
- 
+
         // Si el body trae una contraseña nueva, se hashea antes de guardarla.
         if (inputData.password) {
             const hashedPassword = encryptedPassword(inputData.password);
- 
+
             if (!hashedPassword) {
                 throw new Error('No se pudo procesar la nueva contraseña');
             }
- 
+
             inputData.password = hashedPassword;
         } else {
             delete inputData.password;
         }
- 
+
+        // Igual que en updateUser (admin): si llega un archivo, se reemplaza
+        // el avatar y se borra el anterior del disco (si no era el default).
+        if (req.file) {
+            await deleteOldImage(existingUser.avatar);
+            inputData.avatar = `uploads/avatars/${req.file.filename}`;
+        }
+
         await dbUpdateUser(id, inputData);
- 
+
         // Se retorna el usuario ya saneado (sin password) y con los contactos
         // poblados, igual que en getUserByIdPublic.
         const data = await dbGetUserByID(id);
- 
+
         res.status(200).json({
             msg: 'Se actualizó tu información exitosamente',
             data: data
         });
- 
+
     } catch (error) {
         console.error(error);
- 
+
+        // Si algo falló después de subir el archivo, no dejar el huérfano en disco.
+        if (req.file) {
+            await deleteOldImage(`uploads/avatars/${req.file.filename}`);
+        }
+
         if (error.message.includes('El usuario que deseas actualizar no existe')) {
             return res.status(404).json({
                 msg: error.message
             });
         }
- 
+
         if (error.message.includes('No se pudo procesar la nueva contraseña')) {
             return res.status(500).json({
                 msg: error.message
             });
         }
- 
+
         if (error.name === 'ValidationError') {
             const errorDetails = {};
- 
+
             Object.entries(error.errors).forEach(([field, errObj]) => {
                 errorDetails[field] = errObj.message;
             });
- 
+
             return res.status(400).json({
                 msg: 'Error de validación en propiedades del usuario',
                 errors: errorDetails
             });
         }
- 
+
         if (error.code === 11000) {
             const duplicatedField = Object.keys(error.keyValue)[0];
- 
+
             const errorMessages = {
                 email: 'El correo electrónico ya se encuentra registrado por otro usuario',
                 nickname: 'El nickname ya se encuentra en uso por otro usuario'
             };
- 
+
             return res.status(400).json({
                 msg: errorMessages[duplicatedField] || 'Ya existe un registro con algunos de estos valores únicos'
             });
         }
- 
+
         res.status(500).json({
             msg: 'No se pudo actualizar tu información'
         });
@@ -383,6 +407,19 @@ async function updateUser(req, res) {
             inputData.password = hashedPassword;
         }
 
+        if (req.file) {
+            // Eliminar la imagen previa del disco usando el helper (si no era la por defecto)
+            await deleteOldImage(existingUser.avatar);
+
+            // Asignar la nueva ruta de avatar
+            inputData.avatar = `uploads/avatars/${req.file.filename}`;
+        }else if (inputData.avatar === '') {
+            // Eliminar la imagen previa personalizada del disco
+            await deleteOldImage(existingUser.avatar);
+            // Reasignar a la imagen por defecto
+            inputData.avatar = '';
+        }
+
         const data = await dbUpdateUser(id, inputData);
 
         res.status(200).json({
@@ -391,6 +428,10 @@ async function updateUser(req, res) {
         })
     }catch(error){
         console.error(error);
+
+        if (req.file) {
+            await deleteOldImage(`uploads/avatars/${req.file.filename}`);
+        }
 
         if (error.message.includes('El usuario que deseas actualizar no existe')) {
             return res.status(404).json({
