@@ -22,10 +22,15 @@ const dbDeleteCategory = async ( id ) => {
     return await CategoryModel.findOneAndDelete({ _id : id });
 }
 
+const dbGetDefaultCategory = async () => {
+    return await CategoryModel.findOne({ name: /sin categor[ií]a/i });
+}
+
 export {
     dbCreateCategory,
     dbDeleteCategory,
     dbGetCategory,
     dbGetCategoryByid,
+    dbGetDefaultCategory, 
     dbUpdateCategory,
 }
